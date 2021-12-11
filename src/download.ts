@@ -1,16 +1,20 @@
 import got from 'got';
 import os from 'os';
 import path from 'path';
-import semver from 'semver';
 import zlib from 'zlib';
 import { execSync } from 'child_process';
+import unzip from '7zip-min';
 import { agent } from './utils';
 
 import { createWriteStream, createReadStream } from 'fs';
 import fs from 'fs/promises';
 
+const platform = os.platform();
+const arch = os.arch() as Arch;
+
 const tempDir = path.join(process.cwd(), 'temp');
-const clashPath = path.join(process.cwd(), 'clash', 'clash');
+const clashDir = path.join(process.cwd(), 'clash');
+const clashPath = path.join(clashDir, `clash${platform === 'win32' ? '.exe' : ''}`);
 
 type Arch = 'arm' | 'arm64' | 'ia32' | 'mips' | 'mipsel' | 'ppc' | 'ppc64' | 's390' | 's390x' | 'x32' | 'x64';
 
@@ -37,9 +41,6 @@ const versions: Array<{ name: string; os: NodeJS.Platform; arch: Arch[] }> = [
   { name: 'clash-windows-arm32v7-{version}.zip', os: 'win32', arch: ['arm'] },
   { name: 'clash-windows-arm64-{version}.zip', os: 'win32', arch: ['arm64'] }
 ];
-
-const platform = os.platform();
-const arch = os.arch() as Arch;
 
 const version = versions.find(it => it.os === platform && it.arch.includes(arch));
 if (!version) {
@@ -81,10 +82,14 @@ const download = async (latest: AsyncReturn<typeof getLatestVersion>) => {
       .on('close', res);
   });
 
-  const rpip = createReadStream(downloadPath);
-  await new Promise<void>(res => {
-    rpip.pipe(zlib.createGunzip()).pipe(createWriteStream(clashPath)).on('close', res);
+  const unpackName = await new Promise<string>(res => {
+    unzip.list(downloadPath, (err, result) => res(result[0].name));
   });
+  await new Promise<void>(res => {
+    unzip.unpack(downloadPath, clashDir, err => res());
+  });
+
+  await fs.rename(path.join(clashDir, unpackName), clashPath);
 
   await fs.chmod(clashPath, 0b111101101);
 
