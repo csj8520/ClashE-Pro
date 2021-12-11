@@ -6,20 +6,18 @@ function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     height: 600,
-    width: 800,
+    width: 1200,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      webSecurity: !false,
       contextIsolation: false,
-      allowRunningInsecureContent: !true,
       nodeIntegration: true
     }
   });
   // const userAgent = mainWindow.webContents.getUserAgent() + ' ClashX Runtime';
   // mainWindow.loadURL('http://127.0.0.1:9092/index.html?host=127.0.0.1&port=9091&secret=', { userAgent: 'ClashX Runtime' });
-  mainWindow.loadURL('http://127.0.0.1:3000/index.html?host=127.0.0.1&port=9091&secret=', { userAgent: 'ClashX Runtime' });
+  mainWindow.loadURL('http://127.0.0.1:3000/index.html', { userAgent: 'ClashX Runtime' });
 
-  mainWindow.webContents.openDevTools({ mode: 'undocked' });
+  mainWindow.webContents.openDevTools();
 }
 
 // This method will be called when Electron has finished
@@ -33,6 +31,7 @@ app.on('ready', () => {
 
   serve();
   createWindow();
+  console.log(app.getPath('temp'));
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

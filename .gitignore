@@ -1,3 +1,6 @@
 .idea/
 dist/
 node_modules/
+temp
+.Ds_Store
+clash

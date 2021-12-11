@@ -2,7 +2,7 @@
  *  https://github.com/marcuswestin/WebViewJavascriptBridge
  */
 
-import { contextBridge, ipcRenderer, protocol, app, webFrame, webContents } from 'electron';
+import { ipcRenderer, webFrame } from 'electron';
 import fs from 'fs';
 
 class _JsBridgeAPI implements JsBridgeAPI {
@@ -26,7 +26,7 @@ window.addEventListener('load', () => {
   //   clearInterval(timer);
   window.WebViewJavascriptBridge = new _JsBridgeAPI();
   window.WebViewJavascriptBridge.registerHandler('apiInfo', (data, cb) => {
-    cb({ host: '127.0.0.1', port: '9091', secret: '' });
+    cb({ host: '127.0.0.1', port: '9090', secret: '' });
   });
   window.WebViewJavascriptBridge.registerHandler('getStartAtLogin', (data, cb) => {
     cb(true);
