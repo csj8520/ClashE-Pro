@@ -19,3 +19,5 @@ interface Window {
   WebViewJavascriptBridge: JsBridgeAPI;
   WVJBCallbacks: Function[];
 }
+
+type AsyncReturn<T> = T extends () => Promise<infer T> ? T : never;

@@ -1,24 +1,24 @@
-import got from 'got';
 import os from 'os';
+import got from 'got';
 import path from 'path';
-import zlib from 'zlib';
-import { execSync } from 'child_process';
 import unzip from '7zip-min';
-import { agent } from './utils';
+import { execSync } from 'child_process';
 
-import { createWriteStream, createReadStream } from 'fs';
 import fs from 'fs/promises';
+import { createWriteStream } from 'fs';
+
+import { agent, fileExists } from './utils';
 
 const platform = os.platform();
-const arch = os.arch() as Arch;
+const arch = os.arch() as OSArch;
 
-const tempDir = path.join(process.cwd(), 'temp');
-const clashDir = path.join(process.cwd(), 'clash');
-const clashPath = path.join(clashDir, `clash${platform === 'win32' ? '.exe' : ''}`);
+export const tempDir = path.join(process.cwd(), 'temp');
+export const clashDir = path.join(process.cwd(), 'clash');
+export const clashPath = path.join(clashDir, `clash${platform === 'win32' ? '.exe' : ''}`);
 
-type Arch = 'arm' | 'arm64' | 'ia32' | 'mips' | 'mipsel' | 'ppc' | 'ppc64' | 's390' | 's390x' | 'x32' | 'x64';
+type OSArch = 'arm' | 'arm64' | 'ia32' | 'mips' | 'mipsel' | 'ppc' | 'ppc64' | 's390' | 's390x' | 'x32' | 'x64';
 
-const versions: Array<{ name: string; os: NodeJS.Platform; arch: Arch[] }> = [
+export const versions: Array<{ name: string; os: NodeJS.Platform; arch: OSArch[] }> = [
   { name: 'clash-darwin-amd64-{version}.gz', os: 'darwin', arch: ['x64'] },
   { name: 'clash-darwin-arm64-{version}.gz', os: 'darwin', arch: ['arm64'] },
   // { name: 'clash-freebsd-386-{version}.gz', os: '', arch: [] },
@@ -43,12 +43,9 @@ const versions: Array<{ name: string; os: NodeJS.Platform; arch: Arch[] }> = [
 ];
 
 const version = versions.find(it => it.os === platform && it.arch.includes(arch));
-if (!version) {
-  console.error('unsupport this platform');
-  process.exit(0);
-}
 
-const getLatestVersion = async () => {
+export const getLatestVersion = async () => {
+  if (!version) throw new Error('unsupport this platform');
   const data: any = await got.get('https://api.github.com/repos/Dreamacro/clash/releases/tags/premium', { agent }).json();
   const latestVersion: string = data.name.replace('Premium ', '');
   console.log(`latest version is: ${latestVersion}`);
@@ -61,53 +58,42 @@ const getLatestVersion = async () => {
   };
 };
 
-type AsyncReturn<T> = T extends () => Promise<infer T> ? T : never;
+export const download = async (latest: AsyncReturn<typeof getLatestVersion>) => {
+  if (!(await fileExists(tempDir))) await fs.mkdir(tempDir);
 
-const download = async (latest: AsyncReturn<typeof getLatestVersion>) => {
-  const hasTempDir = await fs
-    .access(tempDir)
-    .then(() => true)
-    .catch(() => false);
-  if (!hasTempDir) {
-    await fs.mkdir(tempDir);
-  }
   const downloadPath = path.join(tempDir, latest.filesName);
   const dpip = createWriteStream(downloadPath);
 
-  await new Promise<void>(res => {
+  await new Promise<void>(res =>
     got
       .get(latest.downloadUrl, { isStream: true, agent })
       .on('downloadProgress', ({ percent }) => console.log(`Downloading: ${(percent * 100).toFixed(2)}%`))
       .pipe(dpip)
-      .on('close', res);
-  });
+      .on('close', res)
+  );
 
-  const unpackName = await new Promise<string>(res => {
-    unzip.list(downloadPath, (err, result) => res(result[0].name));
-  });
-  await new Promise<void>(res => {
-    unzip.unpack(downloadPath, clashDir, err => res());
-  });
+  const unpackName = await new Promise<string>(res => unzip.list(downloadPath, (err, result) => res(result[0].name)));
+
+  const hasClashDir = await fileExists(clashDir);
+  if (!hasClashDir) await fs.mkdir(clashDir);
+  await new Promise<void>(res => unzip.unpack(downloadPath, clashDir, err => res()));
 
   await fs.rename(path.join(clashDir, unpackName), clashPath);
-
   await fs.chmod(clashPath, 0b111101101);
 
-  console.log(execSync(`${clashPath} -v`, { cwd: process.cwd() }).toString().trim());
-  console.log('Download Success');
+  const currentVersion = await getCurrentVersion();
+  console.log(`Download Success current version is: ${currentVersion}`);
 };
 
-const checkUpdate = async () => {
-  const hasClash = await fs
-    .access(clashPath)
-    .then(() => true)
-    .catch(() => false);
-  let currentVersion = '0';
-  if (hasClash) {
-    const out = execSync(`${clashPath} -v`, { cwd: process.cwd() }).toString().trim();
-    console.log(out);
-    currentVersion = out.replace(/^Clash (\d+\.\d+\.\d+) (.|\n)+$/, '$1');
-  }
+export const getCurrentVersion = async () => {
+  const hasClash = await fileExists(clashPath);
+  if (!hasClash) return '0';
+  const out = execSync(`${clashPath} -v`, { cwd: process.cwd() }).toString().trim();
+  console.log(out);
+  return out.replace(/^Clash (\d+\.\d+\.\d+) (.|\n)+$/, '$1');
+};
+export const checkUpdate = async () => {
+  const currentVersion = await getCurrentVersion();
   const latest = await getLatestVersion();
   if (new Date(latest.version).getTime() > new Date(currentVersion).getTime()) {
     await download(latest);
