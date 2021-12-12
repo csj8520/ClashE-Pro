@@ -1,0 +1,8 @@
+selected: clash.yaml
+updateInterval: 86400
+autoSetProxy: true
+list:
+  - name: config.yaml
+    updateTime: 0
+  - name: clash.yaml
+    updateTime: 0

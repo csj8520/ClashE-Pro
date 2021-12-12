@@ -1,6 +1,8 @@
-import { app, BrowserWindow, protocol } from 'electron';
+import { app, BrowserWindow, protocol, shell, session, net } from 'electron';
+import { clashRun, platform, getConfig, fs, clashConfigDir, tempDir, clashDir, copyDefaultConfig, initConfig } from './utils';
 import path from 'path';
-import { serve } from './serve';
+import got from 'got';
+// import { serve } from './utils/serve';
 
 function createWindow() {
   // Create the browser window.
@@ -8,14 +10,14 @@ function createWindow() {
     height: 600,
     width: 1200,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(process.cwd(), 'dist/preload/index.js'),
       contextIsolation: false,
       nodeIntegration: true
     }
   });
   // const userAgent = mainWindow.webContents.getUserAgent() + ' ClashX Runtime';
-  // mainWindow.loadURL('http://127.0.0.1:9092/index.html?host=127.0.0.1&port=9091&secret=', { userAgent: 'ClashX Runtime' });
-  mainWindow.loadURL('http://127.0.0.1:3000/index.html', { userAgent: 'ClashX Runtime' });
+  mainWindow.loadURL('http://127.0.0.1:9090/ui/index.html', { userAgent: 'ClashX Runtime' });
+  // mainWindow.loadURL('http://127.0.0.1:3000/index.html', { userAgent: 'ClashX Runtime' });
 
   mainWindow.webContents.openDevTools();
 }
@@ -23,15 +25,23 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', () => {
-  // protocol.registerStringProtocol('https', (req, cb) => {
-  //   console.log(132446);
-  //   cb({ url: req.url, referrer: req.referrer });
-  // });
+app.on('ready', async () => {
+  // fix it
+  // https://github.com/Dreamacro/clash/issues/1428
+  if (platform === 'win32') {
+    session.defaultSession.webRequest.onHeadersReceived({ urls: ['http://*/*.js'] }, (details, cb) => {
+      cb({ responseHeaders: { ...details.responseHeaders, 'Content-Type': 'application/javascript', abc: '123' } });
+    });
+  }
+  !(await fs.pathExists(tempDir)) && (await fs.mkdir(tempDir));
+  !(await fs.pathExists(clashDir)) && (await fs.mkdir(clashDir));
+  !(await fs.pathExists(clashConfigDir)) && (await fs.mkdirs(clashConfigDir));
 
-  serve();
+  await copyDefaultConfig();
+  const config = await initConfig();
+  await clashRun(config.selected);
+
   createWindow();
-  console.log(app.getPath('temp'));
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

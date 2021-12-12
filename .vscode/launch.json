@@ -15,18 +15,12 @@
       "request": "launch",
       "name": "electron",
       "command": "npm run start"
-    },
-    {
-      "type": "node-terminal",
-      "request": "launch",
-      "name": "web",
-      "command": "npm run dev:web"
     }
   ],
   "compounds": [
     {
       "name": "Run All",
-      "configurations": ["watch", "electron", "web"]
+      "configurations": ["watch", "electron"]
     }
   ]
 }

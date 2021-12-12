@@ -29,16 +29,16 @@ window.addEventListener('load', () => {
     cb({ host: '127.0.0.1', port: '9090', secret: '' });
   });
   window.WebViewJavascriptBridge.registerHandler('getStartAtLogin', (data, cb) => {
-    cb(true);
+    cb(!true);
   });
   window.WebViewJavascriptBridge.registerHandler('isSystemProxySet', (data, cb) => {
-    cb(true);
+    cb(!true);
   });
   window.WebViewJavascriptBridge.registerHandler('setStartAtLogin', (data, cb) => {
-    cb(true);
+    cb(!true);
   });
   window.WebViewJavascriptBridge.registerHandler('setSystemProxy', (data, cb) => {
-    cb(true);
+    cb(!true);
   });
   window.WVJBCallbacks.forEach(it => it(window.WebViewJavascriptBridge));
   // }, 100);
