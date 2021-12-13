@@ -5,7 +5,7 @@ import { clashRun } from './utils/clash';
 import { platform } from './utils/os';
 import { clashConfigDir, clashDir, tempDir } from './utils/const';
 import { copyDefaultConfig, initConfig } from './utils/config';
-import { disableProxy, setProxy } from './utils/proxy';
+import { clearProxy, setProxy } from './utils/proxy';
 // import { serve } from './utils/serve';
 
 let clashProcess: AsyncReturn<typeof clashRun> | null = null;
@@ -46,7 +46,7 @@ app.on('ready', async () => {
   await copyDefaultConfig();
   const config = await initConfig();
   clashProcess = await clashRun(config.selected);
-  config.autoSetProxy && setProxy({ http: '127.0.0.1:7890' });
+  config.autoSetProxy && setProxy({ http: '127.0.0.1:7890', https: '127.0.0.1:7890', socks: '127.0.0.1:7891' });
 
   createWindow();
 
@@ -67,7 +67,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', async () => {
-  disableProxy();
+  clearProxy();
   clashProcess?.kill('SIGKILL');
 });
 
