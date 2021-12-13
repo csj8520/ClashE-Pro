@@ -61,7 +61,12 @@ export const setProxy = (conf: ProxyConfig) => {
   try {
     if (platform === 'win32') {
       execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 1 /f`);
-      execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d ${conf.http || conf.https || conf.socks} /f`);
+      if (conf.http || conf.https) {
+        execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d http://${conf.https || conf.http} /f`);
+      } else {
+        // windows 无法获取请求的域名 导致规则不生效
+        execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d socks=${conf.socks} /f`);
+      }
     } else {
       const networks = getLinuxNetworks();
       for (const network of networks) {
