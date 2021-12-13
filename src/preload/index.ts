@@ -4,6 +4,7 @@
 
 import { ipcRenderer, webFrame } from 'electron';
 import fs from 'fs';
+import { getProxyState, disableProxy, setProxy } from '../utils/proxy';
 
 class _JsBridgeAPI implements JsBridgeAPI {
   private _handles = new Map<string, Function[]>();
@@ -32,13 +33,14 @@ window.addEventListener('load', () => {
     cb(!true);
   });
   window.WebViewJavascriptBridge.registerHandler('isSystemProxySet', (data, cb) => {
-    cb(!true);
+    cb(getProxyState().enable);
   });
   window.WebViewJavascriptBridge.registerHandler('setStartAtLogin', (data, cb) => {
     cb(!true);
   });
   window.WebViewJavascriptBridge.registerHandler('setSystemProxy', (data, cb) => {
-    cb(!true);
+    !data ? disableProxy() : setProxy({ http: '127.0.0.1:7890' });
+    cb(void 0);
   });
   window.WVJBCallbacks.forEach(it => it(window.WebViewJavascriptBridge));
   // }, 100);

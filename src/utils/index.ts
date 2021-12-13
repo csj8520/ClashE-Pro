@@ -20,10 +20,3 @@ export const getLocalClashVersion = async () => {
   console.log(out);
   return out.replace(/^Clash (\d+\.\d+\.\d+) (.|\n)+$/, '$1');
 };
-
-export * from './update';
-export * from './serve';
-export * from './os';
-export * from './const';
-export * from './clash';
-export * from './config';

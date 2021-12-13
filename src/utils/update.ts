@@ -1,12 +1,11 @@
 import got from 'got';
-import path from 'path';
 import unzip from '7zip-min';
-
-// import fs from 'fs/promises';
-import fs from 'fs-extra'
 import { createWriteStream } from 'fs';
 
-import { agent, clashDir, clashPath, tempDir, osType, getLocalClashVersion } from '.';
+import { osType } from './os';
+import { agent, getLocalClashVersion, fs, path } from '.';
+import { clashDir, clashPath, tempDir } from './const';
+
 // https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
 // https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
 export const getClashLatestVersion = async () => {
@@ -26,7 +25,6 @@ export const getClashLatestVersion = async () => {
 };
 
 export const downloadClsh = async (latest: AsyncReturn<typeof getClashLatestVersion>) => {
-
   const downloadPath = path.join(tempDir, latest.filesName);
   const dpip = createWriteStream(downloadPath);
 
@@ -58,6 +56,3 @@ export const updatClash = async () => {
     console.log('now is latest version');
   }
 };
-
-
-// updatClash()

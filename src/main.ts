@@ -1,7 +1,11 @@
 import { app, BrowserWindow, protocol, shell, session, net } from 'electron';
-import { clashRun, platform, getConfig, fs, clashConfigDir, tempDir, clashDir, copyDefaultConfig, initConfig } from './utils';
+import { fs } from './utils';
 import path from 'path';
-import got from 'got';
+import { clashRun } from './utils/clash';
+import { platform } from './utils/os';
+import { clashConfigDir, clashDir, tempDir } from './utils/const';
+import { copyDefaultConfig, initConfig } from './utils/config';
+import { disableProxy, setProxy } from './utils/proxy';
 // import { serve } from './utils/serve';
 
 let clashProcess: AsyncReturn<typeof clashRun> | null = null;
@@ -42,6 +46,7 @@ app.on('ready', async () => {
   await copyDefaultConfig();
   const config = await initConfig();
   clashProcess = await clashRun(config.selected);
+  config.autoSetProxy && setProxy({ http: '127.0.0.1:7890' });
 
   createWindow();
 
@@ -62,6 +67,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', async () => {
+  disableProxy();
   clashProcess?.kill('SIGKILL');
 });
 

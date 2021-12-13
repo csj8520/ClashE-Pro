@@ -1,4 +1,5 @@
-import { clashConfigDir, clashDefaultConfigPath, cwd, fs, path, yaml, configPath } from '.';
+import { fs, path, yaml } from '.';
+import { clashConfigDir, clashDefaultConfigPath, configPath } from './const';
 
 export const clashDefaultConfig = `#---------------------------------------------------#
 ## 配置文件需要放置在 $HOME/.config/clash/*.yaml

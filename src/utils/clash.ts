@@ -1,6 +1,10 @@
-import { getLocalClashVersion, updatClash, clashPath, clashConfigDir, path, delay } from '.';
-import { spawn } from 'child_process';
 import got from 'got';
+import { spawn } from 'child_process';
+
+import { getLocalClashVersion, path, delay } from '.';
+
+import { updatClash } from './update';
+import { clashConfigDir, clashPath } from './const';
 
 export const clashRun = async (config: string) => {
   const localVersion = await getLocalClashVersion();
