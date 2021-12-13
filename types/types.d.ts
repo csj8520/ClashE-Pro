@@ -20,4 +20,4 @@ interface Window {
   WVJBCallbacks: Function[];
 }
 
-type AsyncReturn<T> = T extends () => Promise<infer T> ? T : never;
+type AsyncReturn<T> = T extends (...args: any) => Promise<infer R> ? R : never;

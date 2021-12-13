@@ -4,6 +4,8 @@ import path from 'path';
 import got from 'got';
 // import { serve } from './utils/serve';
 
+let clashProcess: AsyncReturn<typeof clashRun> | null = null;
+
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -39,7 +41,7 @@ app.on('ready', async () => {
 
   await copyDefaultConfig();
   const config = await initConfig();
-  await clashRun(config.selected);
+  clashProcess = await clashRun(config.selected);
 
   createWindow();
 
@@ -57,6 +59,10 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('will-quit', async () => {
+  clashProcess?.kill('SIGKILL');
 });
 
 // In this file you can include the rest of your app"s specific main process

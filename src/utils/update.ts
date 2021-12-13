@@ -7,14 +7,17 @@ import fs from 'fs-extra'
 import { createWriteStream } from 'fs';
 
 import { agent, clashDir, clashPath, tempDir, osType, getLocalClashVersion } from '.';
-
+// https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+// https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
 export const getClashLatestVersion = async () => {
   if (!osType) throw new Error('unsupport this platform');
   const data: any = await got.get('https://api.github.com/repos/Dreamacro/clash/releases/tags/premium', { agent }).json();
   const latestVersion: string = data.name.replace('Premium ', '');
   console.log(`latest version is: ${latestVersion}`);
   const filesName = osType.name.replace('{version}', latestVersion);
-  const downloadUrl = `https://github.com/Dreamacro/clash/releases/download/premium/${filesName}`;
+  // https://gh.2i.gs/
+  // https://download.fastgit.org/Dreamacro/clash/releases/download/premium/clash-windows-arm32v7-2021.12.07.zip
+  const downloadUrl = `https://ghproxy.com/https://github.com/Dreamacro/clash/releases/download/premium/${filesName}`;
   return {
     version: latestVersion,
     filesName,

@@ -1,6 +1,6 @@
 import { clashConfigDir, clashDefaultConfigPath, cwd, fs, path, yaml, configPath } from '.';
 
-export const defaultConfig = `#---------------------------------------------------#
+export const clashDefaultConfig = `#---------------------------------------------------#
 ## 配置文件需要放置在 $HOME/.config/clash/*.yaml
 
 ## 这份文件是clashX的基础配置文件，请尽量新建配置文件进行修改。
@@ -43,11 +43,11 @@ interface Config {
 
 export const copyDefaultConfig = async () => {
   if (await fs.pathExists(clashDefaultConfigPath)) return;
-  await fs.writeFile(clashDefaultConfigPath, defaultConfig);
+  await fs.writeFile(clashDefaultConfigPath, clashDefaultConfig);
 };
 
 export const initConfig = async () => {
-  const files = (await fs.readdir(clashConfigDir)).filter(it => /\.ya?ml$/.test(it));
+  const files = (await fs.readdir(clashConfigDir)).filter(it => /^[^.].+\.ya?ml$/.test(it));
   const config = await getConfig();
   config.list = config.list.filter(it => files.includes(it.name));
   const names = config.list.map(it => it.name);
@@ -58,7 +58,16 @@ export const initConfig = async () => {
 };
 
 export const getConfig = async () => {
-  return yaml.load((await fs.readFile(configPath)).toString()) as Config;
+  if (await fs.pathExists(configPath)) {
+    return yaml.load((await fs.readFile(configPath)).toString()) as Config;
+  } else {
+    return <Config>{
+      selected: '',
+      updateInterval: 86400,
+      autoSetProxy: true,
+      list: []
+    };
+  }
 };
 export const setConfig = async (config: Config) => {
   await fs.writeFile(configPath, yaml.dump(config));
