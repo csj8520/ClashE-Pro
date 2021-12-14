@@ -1,28 +1,25 @@
-// import { autoSetProxy } from '../main';
-// import { extCtl } from '../main/const';
+import { ipcRenderer } from 'electron';
 import { JsBridgeAPI } from './js-bridge';
-// import { clearProxy, getProxyState, setProxy } from '../main/proxy';
 
 export const bridge = new JsBridgeAPI();
 
 bridge.registerHandler('apiInfo', (data, cb) => {
-  // const [host, port] = extCtl.split(':');
-  // cb({ host, port, secret: '' });
-  cb({ host: '127.0.0.1', port: '9090', secret: '' });
+  ipcRenderer.once('api-info', (event, info) => cb(info));
+  ipcRenderer.send('get-api-info');
 });
 bridge.registerHandler('getStartAtLogin', (data, cb) => {
   // TODO
   cb(false);
 });
 bridge.registerHandler('isSystemProxySet', (data, cb) => {
-  // cb(getProxyState().http.enable);
-  cb(false);
+  ipcRenderer.once('proxy-state', (event, state) => cb(state));
+  ipcRenderer.send('get-proxy-state');
 });
 bridge.registerHandler('setStartAtLogin', (data, cb) => {
   // TODO
   cb();
 });
 bridge.registerHandler('setSystemProxy', async (data, cb) => {
-  // data ? await autoSetProxy() : clearProxy();
-  cb();
+  ipcRenderer.once('set-system-proxy-success', () => cb());
+  ipcRenderer.send('set-system-proxy', data);
 });

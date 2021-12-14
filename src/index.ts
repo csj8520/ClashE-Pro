@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain } from 'electron';
 
 import { platform } from './main/os';
 import { clashRun } from './main/clash';
@@ -9,6 +9,7 @@ import { clashConfigDir, clashDir, tempDir } from './main/const';
 import { createWindow } from './main/window';
 import { setTray } from './main/tray';
 import { fixJsMime } from './main/fix-js-mime';
+import { initMessage } from './main/message';
 
 let clashProcess: AsyncReturn<typeof clashRun> | null = null;
 
@@ -19,6 +20,7 @@ app.on('ready', async () => {
   console.log('getAppPath', app.getPath('temp'));
   Menu.setApplicationMenu(null);
   setTray();
+  initMessage();
 
   platform === 'win32' && fixJsMime();
 

@@ -7,7 +7,10 @@ import { showWindow } from './window';
 // https://blog.csdn.net/liu19721018/article/details/109046186
 let tray!: Tray;
 export const setTray = () => {
-  tray = new Tray(path.join(resourcesPath, 'assets/icon.png'));
+  // 适配mac托盘
+  // https://newsn.net/say/electron-tray-ico-name.html
+  // https://www.h5w3.com/118589.html
+  tray = new Tray(path.join(resourcesPath, 'assets/tray.png'));
   const contentMenu = Menu.buildFromTemplate([
     {
       label: '控制台',

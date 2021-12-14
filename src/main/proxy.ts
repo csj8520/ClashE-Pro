@@ -57,6 +57,7 @@ export const getLinuxNetworks = (): string[] => {
 export const setProxy = (conf: ProxyConfig) => {
   if (!(conf.http || conf.https || conf.socks)) throw new Error('http, https, socks There has to be one');
   console.info('setProxy');
+  console.time('setProxy');
   try {
     if (platform === 'win32') {
       execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 1 /f`);
@@ -68,56 +69,82 @@ export const setProxy = (conf: ProxyConfig) => {
       }
     } else {
       const networks = getLinuxNetworks();
+      let command = '';
       for (const network of networks) {
         if (conf.http) {
           const [host, port] = conf.http.split(':');
-          execSync(`networksetup -setwebproxy "${network}" "${host}" "${port}"`);
-          execSync(`networksetup -setwebproxystate "${network}" on`);
+          command += `networksetup -setwebproxy "${network}" "${host}" "${port}"\n`;
+          // execSync(`networksetup -setwebproxy "${network}" "${host}" "${port}"`);
+          // command += `networksetup -setwebproxystate "${network}" on\n`;
+          // execSync(`networksetup -setwebproxystate "${network}" on`);
         }
         if (conf.https) {
           const [host, port] = conf.https.split(':');
-          execSync(`networksetup -setsecurewebproxy "${network}" "${host}" "${port}"`);
-          execSync(`networksetup -setsecurewebproxystate "${network}" on`);
+          command += `networksetup -setsecurewebproxy "${network}" "${host}" "${port}"\n`;
+          // execSync(`networksetup -setsecurewebproxy "${network}" "${host}" "${port}"`);
+          // command += `networksetup -setsecurewebproxystate "${network}" on\n`;
+          // execSync(`networksetup -setsecurewebproxystate "${network}" on`);
         }
         if (conf.socks) {
           const [host, port] = conf.socks.split(':');
-          execSync(`networksetup -setsocksfirewallproxy "${network}" "${host}" "${port}"`);
-          execSync(`networksetup -setsocksfirewallproxystate "${network}" on`);
+          command += `networksetup -setsocksfirewallproxy "${network}" "${host}" "${port}"\n`;
+          // execSync(`networksetup -setsocksfirewallproxy "${network}" "${host}" "${port}"`);
+          // command += `networksetup -setsocksfirewallproxystate "${network}" on\n`;
+          // execSync(`networksetup -setsocksfirewallproxystate "${network}" on`);
         }
       }
+      execSync(command);
     }
     return true;
   } catch (error) {
     console.error(error);
     return false;
+  } finally {
+    console.timeEnd('setProxy');
   }
 };
 
 export const clearProxy = () => {
   console.info('clearProxy');
+  console.time('clearProxy');
+
   try {
     if (platform === 'win32') {
       execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d "" /f`);
       execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 0 /f`);
     } else {
       const networks = getLinuxNetworks();
+      let command = '';
+      console.time('net');
       for (const network of networks) {
-        execSync(`networksetup -setwebproxy "${network}" "" ""`);
-        execSync(`networksetup -setwebproxystate "${network}" off`);
-        execSync(`networksetup -setsecurewebproxy "${network}" "" ""`);
-        execSync(`networksetup -setsecurewebproxystate "${network}" off`);
-        execSync(`networksetup -setsocksfirewallproxy "${network}" "" ""`);
-        execSync(`networksetup -setsocksfirewallproxystate "${network}" off`);
+        command += `networksetup -setwebproxy "${network}" "" ""\n`;
+        command += `networksetup -setwebproxystate "${network}" off\n`;
+        command += `networksetup -setsecurewebproxy "${network}" "" ""\n`;
+        command += `networksetup -setsecurewebproxystate "${network}" off\n`;
+        command += `networksetup -setsocksfirewallproxy "${network}" "" ""\n`;
+        command += `networksetup -setsocksfirewallproxystate "${network}" off\n`;
+        // execSync(`networksetup -setwebproxy "${network}" "" ""`);
+        // execSync(`networksetup -setwebproxystate "${network}" off`);
+        // execSync(`networksetup -setsecurewebproxy "${network}" "" ""`);
+        // execSync(`networksetup -setsecurewebproxystate "${network}" off`);
+        // execSync(`networksetup -setsocksfirewallproxy "${network}" "" ""`);
+        // execSync(`networksetup -setsocksfirewallproxystate "${network}" off`);
       }
+      execSync(command);
+      console.timeEnd('net');
     }
     return true;
   } catch (error) {
     console.error(error);
     return false;
+  } finally {
+    console.timeEnd('clearProxy');
   }
 };
 
 export const getProxyState = (): ProxyState => {
+  console.info('getProxyState');
+  console.time('getProxyState');
   const state: ProxyState = { http: { enable: false }, https: { enable: false }, socks: { enable: false } };
   try {
     if (platform == 'win32') {
@@ -146,6 +173,7 @@ export const getProxyState = (): ProxyState => {
   } catch (error) {
     console.error(error);
   }
+  console.timeEnd('getProxyState');
   return state;
 };
 // console.log(getProxyState());
