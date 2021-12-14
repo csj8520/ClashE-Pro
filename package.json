@@ -2,13 +2,13 @@
   "name": "electron-clash-pro",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/main.js",
+  "main": "./dist/index.js",
   "scripts": {
     "init": "git submodule init && git submodule update && pnpm i && cd clash-dashboard && pnpm i && npm run build",
     "build": "tsc",
     "watch": "tsc -w",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
-    "start": "npm run build && electron ./dist/main.js",
+    "start": "npm run build && electron ./dist/index.js",
     "dev:web": "cd clash-dashboard && npm start",
     "build:web": "cd clash-dashboard && npm run build"
   },
@@ -41,6 +41,10 @@
       {
         "from": "clash-dashboard/dist",
         "to": "clash-dashboard/dist"
+      },
+      {
+        "from": "assets",
+        "to": "assets"
       }
     ],
     "directories": {
@@ -50,10 +54,12 @@
       "icon": "assets/icon.png",
       "target": [
         "nsis"
+      ],
+      "asarUnpack": [
+        "**/node_modules/7zip-bin/**/*"
       ]
     },
     "files": [
-      "assets/**/*",
       "dist/**/*"
     ]
   }

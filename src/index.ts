@@ -1,11 +1,11 @@
 import { app, BrowserWindow, Menu } from 'electron';
 
-import { platform } from './utils/os';
-import { clashRun } from './utils/clash';
-import { clearProxy } from './utils/proxy';
-import { autoSetProxy, fs } from './utils';
-import { copyDefaultConfig, initConfig } from './utils/config';
-import { clashConfigDir, clashDir, tempDir } from './utils/const';
+import { platform } from './main/os';
+import { clashRun } from './main/clash';
+import { clearProxy } from './main/proxy';
+import { autoSetProxy, fs } from './main/utils';
+import { copyDefaultConfig, initConfig } from './main/config';
+import { clashConfigDir, clashDir, tempDir } from './main/const';
 import { createWindow } from './main/window';
 import { setTray } from './main/tray';
 import { fixJsMime } from './main/fix-js-mime';
@@ -16,6 +16,7 @@ let clashProcess: AsyncReturn<typeof clashRun> | null = null;
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
+  console.log('getAppPath', app.getPath('temp'));
   Menu.setApplicationMenu(null);
   setTray();
 

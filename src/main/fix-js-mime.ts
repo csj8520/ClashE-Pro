@@ -1,5 +1,5 @@
 import { session } from 'electron';
-import { extCtl } from '../utils/const';
+import { extCtl } from './const';
 
 // https://github.com/Dreamacro/clash/issues/1428
 export const fixJsMime = () => {

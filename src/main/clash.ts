@@ -1,7 +1,7 @@
 import got from 'got';
 import { spawn } from 'child_process';
 
-import { getLocalClashVersion, path, delay } from '.';
+import { getLocalClashVersion, path, delay } from './utils';
 
 import { updatClash } from './update';
 import { clashConfigDir, clashPath, resourcesPath, extCtl } from './const';

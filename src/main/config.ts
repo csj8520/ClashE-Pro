@@ -1,4 +1,4 @@
-import { fs, path, yaml } from '.';
+import { fs, path, yaml } from './utils';
 import { clashConfigDir, clashDefaultConfigPath, configPath } from './const';
 
 export const clashDefaultConfig = `#---------------------------------------------------#

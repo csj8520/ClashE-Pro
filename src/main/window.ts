@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron';
-import { path } from '../utils';
-import { extCtl, resourcesPath } from '../utils/const';
+import { path } from './utils';
+import { extCtl, resourcesPath } from './const';
 
 export const createWindow = () => {
   const mainWindow = new BrowserWindow({

@@ -1,7 +1,7 @@
 import { app, Menu, Tray } from 'electron';
-import { path } from '../utils';
-import { resourcesPath } from '../utils/const';
-import { platform } from '../utils/os';
+import { path } from './utils';
+import { resourcesPath } from './const';
+import { platform } from './os';
 import { showWindow } from './window';
 // 防止gc回收
 // https://blog.csdn.net/liu19721018/article/details/109046186

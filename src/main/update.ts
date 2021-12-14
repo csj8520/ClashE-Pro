@@ -3,7 +3,7 @@ import unzip from '7zip-min';
 import { createWriteStream } from 'fs';
 
 import { osType } from './os';
-import { agent, getLocalClashVersion, fs, path } from '.';
+import { agent, getLocalClashVersion, fs, path } from './utils';
 import { clashDir, clashPath, tempDir } from './const';
 
 // https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
