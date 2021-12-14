@@ -1,52 +1,36 @@
-import { app, BrowserWindow, protocol, shell, session, net } from 'electron';
-import { fs } from './utils';
-import path from 'path';
-import { clashRun } from './utils/clash';
+import { app, BrowserWindow, Menu } from 'electron';
+
 import { platform } from './utils/os';
-import { clashConfigDir, clashDir, tempDir } from './utils/const';
+import { clashRun } from './utils/clash';
+import { clearProxy } from './utils/proxy';
+import { autoSetProxy, fs } from './utils';
 import { copyDefaultConfig, initConfig } from './utils/config';
-import { clearProxy, setProxy } from './utils/proxy';
-// import { serve } from './utils/serve';
+import { clashConfigDir, clashDir, tempDir } from './utils/const';
+import { createWindow } from './main/window';
+import { setTray } from './main/tray';
+import { fixJsMime } from './main/fix-js-mime';
 
 let clashProcess: AsyncReturn<typeof clashRun> | null = null;
-
-function createWindow() {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    height: 600,
-    width: 1200,
-    webPreferences: {
-      preload: path.join(process.cwd(), 'dist/preload/index.js'),
-      contextIsolation: false,
-      nodeIntegration: true
-    }
-  });
-  // const userAgent = mainWindow.webContents.getUserAgent() + ' ClashX Runtime';
-  mainWindow.loadURL('http://127.0.0.1:9090/ui/index.html', { userAgent: 'ClashX Runtime' });
-  // mainWindow.loadURL('http://127.0.0.1:3000/index.html', { userAgent: 'ClashX Runtime' });
-
-  mainWindow.webContents.openDevTools();
-}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-  // fix it
-  // https://github.com/Dreamacro/clash/issues/1428
-  if (platform === 'win32') {
-    session.defaultSession.webRequest.onHeadersReceived({ urls: ['http://*/*.js'] }, (details, cb) => {
-      cb({ responseHeaders: { ...details.responseHeaders, 'Content-Type': 'application/javascript', abc: '123' } });
-    });
-  }
+  Menu.setApplicationMenu(null);
+  setTray();
+
+  platform === 'win32' && fixJsMime();
+
   !(await fs.pathExists(tempDir)) && (await fs.mkdir(tempDir));
   !(await fs.pathExists(clashDir)) && (await fs.mkdir(clashDir));
   !(await fs.pathExists(clashConfigDir)) && (await fs.mkdirs(clashConfigDir));
 
   await copyDefaultConfig();
   const config = await initConfig();
+
   clashProcess = await clashRun(config.selected);
-  config.autoSetProxy && setProxy({ http: '127.0.0.1:7890', https: '127.0.0.1:7890', socks: '127.0.0.1:7891' });
+
+  config.autoSetProxy && (await autoSetProxy());
 
   createWindow();
 
@@ -61,9 +45,9 @@ app.on('ready', async () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  // if (process.platform !== 'darwin') {
+  //   app.quit();
+  // }
 });
 
 app.on('will-quit', async () => {

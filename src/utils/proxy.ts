@@ -27,8 +27,6 @@ import { platform } from './os';
 // socks=127.0.0.1:7891
 // windows 同时仅支持配置一个代理地址
 
-type HostPort = `${number}.${number}.${number}.${number}:${number}`;
-
 interface ProxyConfig {
   http?: HostPort;
   https?: HostPort;
@@ -58,6 +56,7 @@ export const getLinuxNetworks = (): string[] => {
 
 export const setProxy = (conf: ProxyConfig) => {
   if (!(conf.http || conf.https || conf.socks)) throw new Error('http, https, socks There has to be one');
+  console.info('setProxy');
   try {
     if (platform === 'win32') {
       execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 1 /f`);
@@ -95,6 +94,7 @@ export const setProxy = (conf: ProxyConfig) => {
 };
 
 export const clearProxy = () => {
+  console.info('clearProxy');
   try {
     if (platform === 'win32') {
       execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d "" /f`);

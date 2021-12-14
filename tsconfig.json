@@ -7,7 +7,6 @@
     "importHelpers": true,
     "strict": true,
     "moduleResolution": "node",
-    "baseUrl": ".",
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
