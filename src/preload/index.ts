@@ -1,5 +1,5 @@
 import { bridge } from './bridge';
-
+console.log('this is preload');
 window.addEventListener('load', () => {
   // const timer = setInterval(() => {
   //   if (!window.WVJBCallbacks) return;

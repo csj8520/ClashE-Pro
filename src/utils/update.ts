@@ -36,7 +36,13 @@ export const downloadClsh = async (latest: AsyncReturn<typeof getClashLatestVers
       .on('close', res)
   );
 
-  const unpackName = await new Promise<string>(res => unzip.list(downloadPath, (err, result) => res(result[0].name)));
+  const unpackName = await new Promise<string>(res =>
+    unzip.list(downloadPath, (err, result) => {
+      console.log('err: ', err);
+      console.log('result: ', result);
+      res(result[0].name);
+    })
+  );
 
   await new Promise<void>(res => unzip.unpack(downloadPath, clashDir, err => res()));
 

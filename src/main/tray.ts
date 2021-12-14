@@ -1,11 +1,13 @@
 import { app, Menu, Tray } from 'electron';
+import { path } from '../utils';
+import { resourcesPath } from '../utils/const';
 import { platform } from '../utils/os';
 import { showWindow } from './window';
 // 防止gc回收
 // https://blog.csdn.net/liu19721018/article/details/109046186
 let tray!: Tray;
 export const setTray = () => {
-  tray = new Tray('src/assets/logo.png');
+  tray = new Tray(path.join(resourcesPath, 'assets/icon.png'));
   const contentMenu = Menu.buildFromTemplate([
     {
       label: '控制台',

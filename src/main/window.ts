@@ -1,14 +1,14 @@
 import { BrowserWindow } from 'electron';
 import { path } from '../utils';
-import { cwd, extCtl } from '../utils/const';
+import { extCtl, resourcesPath } from '../utils/const';
 
 export const createWindow = () => {
   const mainWindow = new BrowserWindow({
     height: 600,
     width: 1200,
-    icon: 'src/assets/logo.png',
+    icon: path.join(resourcesPath, 'assets/icon.png'),
     webPreferences: {
-      preload: path.join(cwd, 'dist/preload/index.js'),
+      preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: false,
       nodeIntegration: true
     }

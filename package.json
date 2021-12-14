@@ -2,7 +2,7 @@
   "name": "electron-clash-pro",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/main.js",
   "scripts": {
     "init": "git submodule init && git submodule update && pnpm i && cd clash-dashboard && pnpm i && npm run build",
     "build": "tsc",
@@ -20,7 +20,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/js-yaml": "^4.0.5",
     "electron": "^16.0.4",
-    "tslib": "^2.3.1",
+    "electron-builder": "^22.14.5",
     "typescript": "^4.5.3"
   },
   "dependencies": {
@@ -28,6 +28,33 @@
     "fs-extra": "^10.0.0",
     "got": "^11.8.3",
     "js-yaml": "^4.1.0",
-    "proxy-agent": "^5.0.0"
+    "proxy-agent": "^5.0.0",
+    "tslib": "^2.3.1"
+  },
+  "build": {
+    "appId": "com.csj8520.clash.pro",
+    "extraResources": [
+      {
+        "from": "clash",
+        "to": "clash"
+      },
+      {
+        "from": "clash-dashboard/dist",
+        "to": "clash-dashboard/dist"
+      }
+    ],
+    "directories": {
+      "output": "builder"
+    },
+    "win": {
+      "icon": "assets/icon.png",
+      "target": [
+        "nsis"
+      ]
+    },
+    "files": [
+      "assets/**/*",
+      "dist/**/*"
+    ]
   }
 }
