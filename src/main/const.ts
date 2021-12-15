@@ -3,6 +3,9 @@ import path from 'path';
 import { platform } from './os';
 
 export const resourcesPath = path.join(app.getAppPath(), '../');
+// import module from 'module';
+// @ts-ignore
+// module.globalPaths.push(path.join(resourcesPath, 'app.asar.unpacked/node_modules'));
 
 export const tempDir = path.join(app.getPath('temp'), 'clash-pro');
 export const clashDir = path.join(resourcesPath, 'clash');

@@ -10,7 +10,8 @@
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/index.js",
     "dev:web": "cd clash-dashboard && npm start",
-    "build:web": "cd clash-dashboard && npm run build"
+    "build:web": "cd clash-dashboard && npm run build",
+    "pack": "npm run build && npx electron-builder --dir"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +34,9 @@
   },
   "build": {
     "appId": "com.csj8520.clash.pro",
+    "removePackageScripts": true,
+    "compression": "normal",
+    "asar": false,
     "extraResources": [
       {
         "from": "clash",
@@ -50,17 +54,38 @@
     "directories": {
       "output": "builder"
     },
+    "files": [
+      "dist/**/*"
+    ],
     "win": {
       "icon": "assets/icon.png",
       "target": [
         "nsis"
       ],
-      "asarUnpack": [
-        "**/node_modules/7zip-bin/**/*"
+      "files": [
+        "node_modules/7zip-bin/**/*",
+        "!node_modules/7zip-bin/linux/**",
+        "!node_modules/7zip-bin/win/**"
       ]
     },
-    "files": [
-      "dist/**/*"
-    ]
-  }
+    "mac": {
+      "icon": "assets/icon.png",
+      "target": [],
+      "files": [
+        "node_modules/7zip-bin/**/*",
+        "!node_modules/7zip-bin/linux/**",
+        "!node_modules/7zip-bin/win/**"
+      ]
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "target": [],
+      "files": [
+        "node_modules/7zip-bin/**/*",
+        "!node_modules/7zip-bin/mac/**",
+        "!node_modules/7zip-bin/win/**"
+      ]
+    }
+  },
+  "external": []
 }
