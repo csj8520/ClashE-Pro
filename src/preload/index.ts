@@ -1,3 +1,4 @@
+// import { ipcRenderer } from 'electron';
 import { bridge } from './bridge';
 console.log('this is preload');
 window.addEventListener('load', () => {
@@ -9,4 +10,9 @@ window.addEventListener('load', () => {
   window.WVJBCallbacks?.forEach(it => it(bridge));
   window.WVJBCallbacks = [];
   // }, 100);
+
+  // ipcRenderer.on('debug-log', (event, log) => {
+  //   console.log('log: ', log);
+  // });
+  // ipcRenderer.send('get-debug-log');
 });

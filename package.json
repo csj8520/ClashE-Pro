@@ -11,7 +11,7 @@
     "start": "npm run build && electron ./dist/index.js",
     "dev:web": "cd clash-dashboard && npm start",
     "build:web": "cd clash-dashboard && npm run build",
-    "pack": "npm run build && npx electron-builder --dir"
+    "pack": "npm run build && electron-builder"
   },
   "keywords": [],
   "author": "",
@@ -79,7 +79,9 @@
     },
     "linux": {
       "icon": "assets/icon.png",
-      "target": [],
+      "target": [
+        "dmg"
+      ],
       "files": [
         "node_modules/7zip-bin/**/*",
         "!node_modules/7zip-bin/mac/**",

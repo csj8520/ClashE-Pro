@@ -17,6 +17,14 @@ let clashProcess: AsyncReturn<typeof clashRun> | null = null;
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
+  // ipcMain.on('get-debug-log', event => {
+  //   const write = process.stdout.write;
+  //   process.stdout.write = (...args: any) => {
+  //     event.reply('debug-log', args[0].toString());
+  //     return write.apply(process.stdout, args);
+  //   };
+  // });
+
   console.log('getAppPath', app.getPath('temp'));
   Menu.setApplicationMenu(null);
   setTray();

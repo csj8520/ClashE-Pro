@@ -15,6 +15,7 @@ export const createWindow = () => {
   });
   mainWindow.loadURL(`http://${extCtl}/ui/index.html`, { userAgent: 'ClashX Runtime' });
   mainWindow.webContents.openDevTools();
+  return mainWindow;
 };
 
 export const showWindow = () => {
