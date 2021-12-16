@@ -7,7 +7,7 @@ import { autoSetProxy, fs } from './main/utils';
 import { copyDefaultConfig, initConfig } from './main/config';
 import { clashConfigDir, clashDir, tempDir } from './main/const';
 import { createWindow } from './main/window';
-import { setTray } from './main/tray';
+import { setTray, setAppMenu } from './main/menu';
 import { fixJsMime } from './main/fix-js-mime';
 import { initMessage } from './main/message';
 
@@ -26,8 +26,9 @@ app.on('ready', async () => {
   // });
 
   console.log('getAppPath', app.getPath('temp'));
-  Menu.setApplicationMenu(null);
+
   setTray();
+  setAppMenu();
   initMessage();
 
   platform === 'win32' && fixJsMime();
