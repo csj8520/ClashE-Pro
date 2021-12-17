@@ -1,96 +1,116 @@
 import { app, Menu, Tray } from 'electron';
+import debounce from 'lodash.debounce';
+
 import { autoSetProxy, path } from './utils';
 import { resourcesPath } from './const';
 import { platform } from './os';
 import { showWindow } from './window';
-import { fetchClashConfig, fetchSetClashConfig } from './fetch';
+import { fetchClashConfig, fetchSetClashConfig, fetchClashGroups, fetchSetClashGroups } from './fetch';
 import { clearProxy, getProxyState } from './proxy';
 
 // 防止gc回收
 // https://blog.csdn.net/liu19721018/article/details/109046186
 let tray!: Tray;
 
-enum menuId {
-  'mode' = 'mode',
-  'modeGlobal' = 'mode-global',
-  'modeRule' = 'mode-rule',
-  'modeScript' = 'mode-script',
-  'modeDirect' = 'mode-direct',
-  'proxy' = 'proxy',
-  'control' = 'control',
-  'exit' = 'exit'
+interface BuildMenu {
+  sysProxy?: boolean;
+  mode?: 'global' | 'rule' | 'direct' | 'script';
+  groups?: API.Group[];
 }
-export const menu = Menu.buildFromTemplate([
-  {
-    id: menuId.mode,
-    label: '出站规则',
-    type: 'submenu',
-    submenu: [
-      {
-        id: menuId.modeGlobal,
-        label: '全局连接',
-        type: 'radio',
-        click() {
-          fetchSetClashConfig({ mode: 'global' });
+export const buildMenu = (op?: BuildMenu) => {
+  const { sysProxy = false, mode, groups = [] } = op || {};
+  return Menu.buildFromTemplate([
+    {
+      label: `出站规则(${mode})`,
+      type: 'submenu',
+      submenu: [
+        {
+          label: '全局连接',
+          type: 'radio',
+          checked: mode === 'global',
+          click() {
+            fetchSetClashConfig({ mode: 'global' });
+          }
+        },
+        {
+          label: '规则判断',
+          type: 'radio',
+          checked: mode === 'rule',
+          click() {
+            fetchSetClashConfig({ mode: 'rule' });
+          }
+        },
+        {
+          label: '脚本模式',
+          type: 'radio',
+          checked: mode === 'script',
+          click() {
+            fetchSetClashConfig({ mode: 'script' });
+          }
+        },
+        {
+          label: '直接连接',
+          type: 'radio',
+          checked: mode === 'direct',
+          click() {
+            fetchSetClashConfig({ mode: 'direct' });
+          }
         }
-      },
-      {
-        id: menuId.modeRule,
-        label: '规则判断',
-        type: 'radio',
-        click() {
-          fetchSetClashConfig({ mode: 'rule' });
-        }
-      },
-      {
-        id: menuId.modeScript,
-        label: '脚本模式',
-        type: 'radio',
-        click() {
-          fetchSetClashConfig({ mode: 'script' });
-        }
-      },
-      {
-        id: menuId.modeDirect,
-        label: '直接连接',
-        type: 'radio',
-        click() {
-          fetchSetClashConfig({ mode: 'direct' });
-        }
+      ]
+    },
+    {
+      label: '策略组',
+      type: 'submenu',
+      submenu: groups.map(it => ({
+        label: it.name,
+        type: 'submenu',
+        submenu: it.all.map(t => ({
+          label: t,
+          type: 'radio',
+          checked: it.now === t,
+          enabled: it.type === 'Selector',
+          click() {
+            fetchSetClashGroups({ group: it.name, value: t });
+          }
+        }))
+      }))
+    },
+    {
+      label: '设置为系统代理',
+      type: 'checkbox',
+      checked: sysProxy,
+      click(it) {
+        it.checked ? autoSetProxy() : clearProxy();
       }
-    ]
-  },
-  {
-    id: menuId.proxy,
-    label: '设置为系统代理',
-    type: 'checkbox',
-    click(it) {
-      it.checked ? autoSetProxy() : clearProxy();
+    },
+    {
+      label: '控制台',
+      type: 'normal',
+      click: showWindow
+    },
+    {
+      label: '退出',
+      role: 'quit'
     }
-  },
-  {
-    id: menuId.control,
-    label: '控制台',
-    type: 'normal',
-    click() {
-      showWindow();
-    }
-  },
-  {
-    id: menuId.exit,
-    label: '退出',
-    type: 'normal',
-    click() {
-      app.quit();
-    }
-  }
-]);
+  ]);
+};
 
 // 适配mac托盘
 // https://newsn.net/say/electron-tray-ico-name.html
 // https://www.h5w3.com/118589.html
 
 // https://www.electronjs.org/docs/latest/api/tray
+
+export const updateTray = async () => {
+  if (!tray) return;
+  console.log('updateTray');
+  console.time('updateTray');
+  const config = await fetchClashConfig();
+  const groups = await fetchClashGroups();
+  const menu = buildMenu({ sysProxy: getProxyState().http.enable, mode: config.mode, groups });
+  tray.setContextMenu(menu);
+  console.timeEnd('updateTray');
+};
 
 export const setTray = () => {
   tray = new Tray(path.join(resourcesPath, 'assets/tray.png'));
@@ -99,23 +119,35 @@ export const setTray = () => {
   tray.on('click', async () => {
     console.log('click me');
     if (platform === 'win32') return showWindow();
-    const config = await fetchClashConfig();
-    // mac not support change label, win ?
-    menu.getMenuItemById(menuId.mode)!.label = `出站规则(${config.mode})`;
-    const modeSub = { global: menuId.modeGlobal, rule: menuId.modeRule, script: menuId.modeScript, direct: menuId.modeDirect };
-    menu.getMenuItemById(modeSub[config.mode])!.checked = true;
-    menu.getMenuItemById(menuId.proxy)!.checked = getProxyState().http.enable;
-    // tray.setContextMenu(menu);
+    await updateTray();
   });
-  tray.on('right-click', () => {
-    console.log('right-click');
+
+  // win11 not support
+  // tray.on('right-click', () => {
+  //   console.log('right-click');
+  // });
+
+  // compatible with win11
+  tray.on('mouse-move', debounce(updateTray, 1000, { leading: true, trailing: false }));
+
+  // TODO waiting test mac
+  tray.on('mouse-enter', () => {
+    console.log('mouse-enter');
   });
-  tray.setContextMenu(menu);
+  updateTray();
 };
 
 export const setAppMenu = () => {
   if (platform === 'darwin') {
-    const _menu = Menu.buildFromTemplate([{ label: app.getName() }]);
+    const _menu = Menu.buildFromTemplate([
+      {
+        label: app.getName(),
+        submenu: [
+          { label: '控制台', type: 'normal', click: showWindow },
+          { label: '退出', role: 'quit' }
+        ]
+      }
+    ]);
     Menu.setApplicationMenu(_menu);
   } else {
     Menu.setApplicationMenu(null);
