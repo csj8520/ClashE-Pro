@@ -11,7 +11,9 @@ export const clashRun = async (config: string) => {
   if (localVersion == '0') await updatClash();
 
   const uiDir = path.join(resourcesPath, 'clash-dashboard/dist');
-  const clash = spawn(clashPath, ['-d', clashConfigDir, '-f', path.join(clashConfigDir, config), '-ext-ctl', extCtl, '-ext-ui', uiDir]);
+  const clash = spawn(clashPath, ['-d', clashConfigDir, '-f', path.join(clashConfigDir, config), '-ext-ctl', extCtl, '-ext-ui', uiDir], {
+    windowsHide: true
+  });
   clash.stdout.pipe(process.stdout);
   clash.stderr.pipe(process.stderr);
 

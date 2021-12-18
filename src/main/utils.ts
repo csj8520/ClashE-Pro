@@ -19,7 +19,7 @@ export const delay = (t: number) => new Promise(res => setTimeout(res, t));
 export const getLocalClashVersion = async () => {
   const hasClash = await fs.pathExists(clashPath);
   if (!hasClash) return '0';
-  const out = execSync(`${clashPath} -v`).toString().trim();
+  const out = execSync(`${clashPath} -v`, { windowsHide: true }).toString().trim();
   console.log(out);
   return out.replace(/^Clash (\d+\.\d+\.\d+) (.|\n)+$/, '$1');
 };

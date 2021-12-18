@@ -51,7 +51,7 @@ interface ProxyState {
 const regPath = '"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"';
 
 export const getLinuxNetworks = (): string[] => {
-  return execSync('networksetup -listallnetworkservices').toString().trim().split('\n').slice(1);
+  return execSync('networksetup -listallnetworkservices', { windowsHide: true }).toString().trim().split('\n').slice(1);
 };
 
 export const setProxy = (conf: ProxyConfig) => {
@@ -60,12 +60,12 @@ export const setProxy = (conf: ProxyConfig) => {
   console.time('setProxy');
   try {
     if (platform === 'win32') {
-      execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 1 /f`);
+      execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 1 /f`, { windowsHide: true });
       if (conf.http || conf.https) {
-        execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d http://${conf.https || conf.http} /f`);
+        execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d http://${conf.https || conf.http} /f`, { windowsHide: true });
       } else {
         // windows 无法获取请求的域名 导致规则不生效
-        execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d socks=${conf.socks} /f`);
+        execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d socks=${conf.socks} /f`, { windowsHide: true });
       }
     } else {
       const networks = getLinuxNetworks();
@@ -93,7 +93,7 @@ export const setProxy = (conf: ProxyConfig) => {
           // execSync(`networksetup -setsocksfirewallproxystate "${network}" on`);
         }
       }
-      execSync(command);
+      execSync(command, { windowsHide: true });
     }
     return true;
   } catch (error) {
@@ -110,8 +110,8 @@ export const clearProxy = () => {
 
   try {
     if (platform === 'win32') {
-      execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d "" /f`);
-      execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 0 /f`);
+      execSync(`reg add ${regPath} /v ProxyServer /t REG_SZ /d "" /f`, { windowsHide: true });
+      execSync(`reg add ${regPath} /v ProxyEnable /t REG_DWORD /d 0 /f`, { windowsHide: true });
     } else {
       const networks = getLinuxNetworks();
       let command = '';
@@ -130,7 +130,7 @@ export const clearProxy = () => {
         // execSync(`networksetup -setsocksfirewallproxy "${network}" "" ""`);
         // execSync(`networksetup -setsocksfirewallproxystate "${network}" off`);
       }
-      execSync(command);
+      execSync(command, { windowsHide: true });
       console.timeEnd('net');
     }
     return true;
@@ -148,8 +148,11 @@ export const getProxyState = (): ProxyState => {
   const state: ProxyState = { http: { enable: false }, https: { enable: false }, socks: { enable: false } };
   try {
     if (platform == 'win32') {
-      state.http.enable = state.https.enable = state.socks.enable = execSync(`reg query ${regPath} /v ProxyEnable`).toString().includes('0x1');
-      const out = execSync(`reg query ${regPath} /v ProxyServer`).toString();
+      state.http.enable =
+        state.https.enable =
+        state.socks.enable =
+          execSync(`reg query ${regPath} /v ProxyEnable`, { windowsHide: true }).toString().includes('0x1');
+      const out = execSync(`reg query ${regPath} /v ProxyServer`, { windowsHide: true }).toString();
       const [_, protocol = 'http://', host] = out.match(/(?<=ProxyServer\s+REG_SZ\s+)(?!\s)((?:http\:\/\/)|(?:socks=))?(.+)/) || [];
       if (protocol === 'http://') {
         state.http.server = host as any;
@@ -158,7 +161,7 @@ export const getProxyState = (): ProxyState => {
         state.socks.server = host as any;
       }
     } else {
-      const out = execSync('scutil --proxy').toString().trim();
+      const out = execSync('scutil --proxy', { windowsHide: true }).toString().trim();
       const [http, https, socks] = ['HTTP', 'HTTPS', 'SOCKS'].map(it => {
         const enable = out.match(new RegExp(`(?<=${it}Enable\\s*:\\s*)([^\\s]+)`))?.[0] === '1';
         const host = out.match(new RegExp(`(?<=${it}Proxy\\s*:\\s*)([^\\s]+)`))?.[0];
