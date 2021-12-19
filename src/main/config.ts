@@ -1,5 +1,8 @@
+import got from 'got';
 import { fs, path, yaml } from './utils';
 import { clashConfigDir, clashDefaultConfigPath, configPath } from './const';
+
+const cache = new Map();
 
 export const clashDefaultConfig = `#---------------------------------------------------#
 ## 配置文件需要放置在 $HOME/.config/clash/*.yaml
@@ -47,28 +50,32 @@ export const initConfig = async () => {
   return setConfig(config);
 };
 
-export const getConfig = async () => {
+export const getConfig = async (): Promise<Config> => {
+  if (cache.has('config')) return cache.get('config');
+  let config: Config = { selected: '', updateInterval: 86400, autoSetProxy: true, list: [] };
+
   if (await fs.pathExists(configPath)) {
-    return yaml.load((await fs.readFile(configPath)).toString()) as Config;
-  } else {
-    return <Config>{
-      selected: '',
-      updateInterval: 86400,
-      autoSetProxy: true,
-      list: []
-    };
+    const _config = yaml.load((await fs.readFile(configPath)).toString()) as Config;
+    Object.assign(config, _config);
   }
+  cache.set('config', config);
+  return config;
 };
 export const setConfig = async (config: Config) => {
   console.log('setConfig');
   console.time('setConfig');
   await fs.writeFile(configPath, yaml.dump(config));
+  cache.set('config', config);
   console.timeEnd('setConfig');
   return config;
 };
 
 export const getClashConfig = async (name: string) => {
-  return yaml.load((await fs.readFile(path.join(clashConfigDir, name))).toString());
+  const key = `clash-config-${name}`;
+  if (cache.has(key)) return cache.get(key);
+  const config = yaml.load((await fs.readFile(path.join(clashConfigDir, name))).toString());
+  cache.set(key, config);
+  return config;
 };
 
 export const getApiInfo = async (): Promise<Record<'host' | 'port' | 'secret', string>> => {
@@ -81,4 +88,35 @@ export const getApiInfo = async (): Promise<Record<'host' | 'port' | 'secret', s
   const [host, port] = _extCtl.split(':');
   console.timeEnd('getApiInfo');
   return { host: host === '0.0.0.0' ? '127.0.0.1' : host, port, secret };
+};
+
+export const updateRemoteConfig = async (name: string, sub: string) => {
+  console.log(`Start Update Sub: ${name}`);
+  const text = await got.get(sub).text();
+  await fs.writeFile(path.join(clashConfigDir, name), text);
+  const config = await getConfig();
+  const idx = config.list.findIndex(it => it.name === name);
+  config.list.splice(idx, 1, { ...config.list[idx], updateTime: Date.now() });
+  await setConfig(config);
+  console.log(`Update Sub: ${name} Success`);
+};
+
+export const updateAllRemoteConfig = async () => {
+  const config = await getConfig();
+  for (const it of config.list) {
+    if (!it.sub) continue;
+    await updateRemoteConfig(it.name, it.sub);
+  }
+};
+
+export const autoUpdateAllRemoteConfig = async () => {
+  const config = await getConfig();
+  for (const it of config.list) {
+    if (!it.sub) continue;
+    setTimeout(() => {
+      setInterval(() => {
+        updateRemoteConfig(it.name, it.sub!);
+      }, config.updateInterval * 1000);
+    }, config.updateInterval * 1000 - (Date.now() - it.updateTime));
+  }
 };

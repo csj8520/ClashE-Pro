@@ -22,7 +22,7 @@ export const createWindow = async () => {
   return mainWindow;
 };
 
-export const getMainWindow = () => mainWindow;
+export const getMainWindow = () => (mainWindow?.isDestroyed ? null : mainWindow);
 
 export const showWindow = () => {
   const allWindow = BrowserWindow.getAllWindows();

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, Tray } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, Tray } from 'electron';
 import debounce from 'lodash.debounce';
 
 import { autoSetProxy, path, restartClash } from './utils';
@@ -7,7 +7,7 @@ import { platform } from './os';
 import { showWindow } from './window';
 import { fetchClashConfig, fetchSetClashConfig, fetchClashGroups, fetchSetClashGroups } from './fetch';
 import { clearProxy, getProxyState } from './proxy';
-import { getConfig, setConfig } from './config';
+import { getConfig, setConfig, updateAllRemoteConfig } from './config';
 
 // 防止gc回收
 // https://blog.csdn.net/liu19721018/article/details/109046186
@@ -21,6 +21,41 @@ interface BuildMenu {
 }
 export const buildMenu = (op?: BuildMenu) => {
   const { sysProxy = false, mode, groups = [], config } = op || {};
+
+  const policy: MenuItemConstructorOptions[] = groups.map(it => ({
+    label: it.name,
+    type: 'submenu',
+    submenu: it.all.map(t => ({
+      label: t,
+      type: 'radio',
+      checked: it.now === t,
+      enabled: it.type === 'Selector',
+      click() {
+        fetchSetClashGroups({ group: it.name, value: t });
+      }
+    }))
+  }));
+
+  const configMenu: MenuItemConstructorOptions[] =
+    config?.list.map(it => ({
+      label: it.name,
+      type: 'radio',
+      checked: it.name === config.selected,
+      async click() {
+        if (config.selected === it.name) return;
+        await setConfig({ ...config, selected: it.name });
+        await restartClash();
+      }
+    })) ?? [];
+  configMenu.push({ type: 'separator' });
+  configMenu.push({
+    label: '更新远程配置',
+    type: 'normal',
+    async click() {
+      await updateAllRemoteConfig();
+      await restartClash();
+    }
+  });
   return Menu.buildFromTemplate([
     {
       label: `出站规则(${mode})`,
@@ -63,33 +98,12 @@ export const buildMenu = (op?: BuildMenu) => {
     {
       label: '策略组',
       type: 'submenu',
-      submenu: groups.map(it => ({
-        label: it.name,
-        type: 'submenu',
-        submenu: it.all.map(t => ({
-          label: t,
-          type: 'radio',
-          checked: it.now === t,
-          enabled: it.type === 'Selector',
-          click() {
-            fetchSetClashGroups({ group: it.name, value: t });
-          }
-        }))
-      }))
+      submenu: policy
     },
     {
       label: '配置',
       type: 'submenu',
-      submenu: config?.list.map(it => ({
-        label: it.name,
-        type: 'radio',
-        checked: it.name === config.selected,
-        async click() {
-          if (config.selected === it.name) return;
-          await setConfig({ ...config, selected: it.name });
-          await restartClash();
-        }
-      }))
+      submenu: configMenu
     },
     {
       label: '设置为系统代理',
