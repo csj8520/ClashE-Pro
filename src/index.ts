@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, ipcMain } from 'electron';
 
 import { platform } from './main/os';
-import { clashRun } from './main/clash';
+import { clashRun, killClash } from './main/clash';
 import { clearProxy } from './main/proxy';
 import { autoSetProxy, fs } from './main/utils';
 import { copyDefaultConfig, initConfig } from './main/config';
@@ -10,8 +10,6 @@ import { createWindow } from './main/window';
 import { setTray, setAppMenu } from './main/menu';
 import { fixJsMime } from './main/fix-js-mime';
 import { initMessage } from './main/message';
-
-let clashProcess: AsyncReturn<typeof clashRun> | null = null;
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -31,7 +29,7 @@ app.on('ready', async () => {
   setAppMenu();
   initMessage();
 
-  platform === 'win32' && fixJsMime();
+  platform === 'win32' && (await fixJsMime());
 
   !(await fs.pathExists(tempDir)) && (await fs.mkdir(tempDir));
   !(await fs.pathExists(clashDir)) && (await fs.mkdir(clashDir));
@@ -40,11 +38,11 @@ app.on('ready', async () => {
   await copyDefaultConfig();
   const config = await initConfig();
 
-  clashProcess = await clashRun(config.selected);
+  await clashRun(config.selected);
 
   config.autoSetProxy && (await autoSetProxy());
 
-  createWindow();
+  await createWindow();
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -64,7 +62,7 @@ app.on('window-all-closed', () => {
 
 app.on('will-quit', async () => {
   clearProxy();
-  clashProcess?.kill('SIGKILL');
+  killClash();
 });
 
 // In this file you can include the rest of your app"s specific main process

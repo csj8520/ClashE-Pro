@@ -1,9 +1,12 @@
-import { BrowserWindow } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { path } from './utils';
-import { extCtl, resourcesPath } from './const';
+import { resourcesPath } from './const';
+import { getApiInfo } from './config';
 
-export const createWindow = () => {
-  const mainWindow = new BrowserWindow({
+let mainWindow: BrowserWindow | null = null;
+
+export const createWindow = async () => {
+  mainWindow = new BrowserWindow({
     height: 600,
     width: 1200,
     icon: path.join(resourcesPath, 'assets/icon.png'),
@@ -13,10 +16,13 @@ export const createWindow = () => {
       nodeIntegration: true
     }
   });
-  mainWindow.loadURL(`http://${extCtl}/ui/index.html`, { userAgent: 'ClashX Runtime' });
-  mainWindow.webContents.openDevTools();
+  const { host, port } = await getApiInfo();
+  mainWindow.loadURL(`http://${host}:${port}/ui/`, { userAgent: 'ClashX Runtime' });
+  app.isPackaged || mainWindow.webContents.openDevTools();
   return mainWindow;
 };
+
+export const getMainWindow = () => mainWindow;
 
 export const showWindow = () => {
   const allWindow = BrowserWindow.getAllWindows();

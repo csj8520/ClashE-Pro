@@ -1,9 +1,8 @@
 import { session } from 'electron';
-import { extCtl } from './const';
 
 // https://github.com/Dreamacro/clash/issues/1428
 export const fixJsMime = () => {
-  session.defaultSession.webRequest.onHeadersReceived({ urls: [`http://${extCtl}/*.js`] }, (details, cb) => {
+  session.defaultSession.webRequest.onHeadersReceived({ urls: [`http://*/*.js`] }, (details, cb) => {
     cb({ responseHeaders: { ...details.responseHeaders, 'Content-Type': 'application/javascript', abc: '123' } });
   });
 };

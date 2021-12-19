@@ -31,17 +31,6 @@ rules:
   - MATCH,DIRECT
 `;
 
-interface Config {
-  selected: string;
-  updateInterval: number;
-  autoSetProxy: boolean;
-  list: Array<{
-    name: string;
-    sub?: string;
-    updateTime: number;
-  }>;
-}
-
 export const copyDefaultConfig = async () => {
   if (await fs.pathExists(clashDefaultConfigPath)) return;
   await fs.writeFile(clashDefaultConfigPath, clashDefaultConfig);
@@ -71,10 +60,25 @@ export const getConfig = async () => {
   }
 };
 export const setConfig = async (config: Config) => {
+  console.log('setConfig');
+  console.time('setConfig');
   await fs.writeFile(configPath, yaml.dump(config));
+  console.timeEnd('setConfig');
   return config;
 };
 
 export const getClashConfig = async (name: string) => {
   return yaml.load((await fs.readFile(path.join(clashConfigDir, name))).toString());
+};
+
+export const getApiInfo = async (): Promise<Record<'host' | 'port' | 'secret', string>> => {
+  console.log('getApiInfo');
+  console.time('getApiInfo');
+  const { selected } = await getConfig();
+  const clashConfig = (await getClashConfig(selected)) as any;
+  const _extCtl = clashConfig?.['external-controller'] || '127.0.0.1:9090';
+  const secret = clashConfig?.secret || '';
+  const [host, port] = _extCtl.split(':');
+  console.timeEnd('getApiInfo');
+  return { host: host === '0.0.0.0' ? '127.0.0.1' : host, port, secret };
 };

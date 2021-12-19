@@ -5,6 +5,9 @@ import { execSync } from 'child_process';
 import { setProxy } from './proxy';
 import { clashPath } from './const';
 import { fetchClashConfig } from './fetch';
+import { clashRun, killClash } from './clash';
+import { getConfig, getApiInfo } from './config';
+import { getMainWindow } from './window';
 
 export { default as fs } from 'fs-extra';
 export { default as path } from 'path';
@@ -34,4 +37,15 @@ export const autoSetProxy = async () => {
     const socks: HostPort | undefined = _config['socks-port'] ? `127.0.0.1:${_config['socks-port']}` : void 0;
     setProxy({ http, https: http, socks });
   }
+};
+
+export const restartClash = async () => {
+  const config = await getConfig();
+  killClash();
+  await clashRun(config.selected);
+  config.autoSetProxy && (await autoSetProxy());
+  const mainWindow = getMainWindow();
+  if (!mainWindow) return;
+  const { host, port } = await getApiInfo();
+  mainWindow.loadURL(`http://${host}:${port}/ui/`);
 };

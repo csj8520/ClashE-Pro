@@ -1,30 +1,38 @@
 import got from 'got';
-import { extCtl } from './const';
+import { getApiInfo } from './config';
 
-interface ClashConfig {
-  'allow-lan': boolean;
-  authentication: [];
-  'bind-address': string;
-  ipv6: boolean;
-  'log-level': 'silent' | 'info' | 'warning' | 'error' | 'debug';
-  'mixed-port': number;
-  mode: 'global' | 'rule' | 'direct' | 'script';
-  port: number;
-  'redir-port': number;
-  'socks-port': number;
-  'tproxy-port': number;
-}
+const getFetchOption = async (path: `/${string}`) => {
+  const { host, port, secret } = await getApiInfo();
+  return {
+    url: `http://${host}:${port}${path}`,
+    option: {
+      headers: secret ? { Authorization: `Bearer ${secret}` } : {}
+    }
+  };
+};
+
+export const fetchClash = async (): Promise<null | { hello: 'clash' }> => {
+  const option = await getFetchOption('/');
+  return (await got
+    .get(option.url, option.option)
+    .json()
+    .catch(() => null)) as any;
+};
 
 export const fetchClashConfig = async () => {
-  return (await got.get(`http://${extCtl}/configs`).json()) as ClashConfig;
+  const option = await getFetchOption('/configs');
+  return (await got.get(option.url, option.option).json()) as API.Config;
 };
 
-export const fetchSetClashConfig = async (config: Partial<ClashConfig>) => {
-  return await got.patch(`http://${extCtl}/configs`, { json: config });
+export const fetchSetClashConfig = async (config: Partial<API.Config>) => {
+  const option = await getFetchOption('/configs');
+  return await got.patch(option.url, { ...option.option, json: config });
 };
 
-export const fetchClashGroups = async () => {
-  const { proxies } = await got.get(`http://${extCtl}/proxies`).json<API.Proxies>();
+export const fetchClashGroups = async (op?: { mode?: API.Mode }) => {
+  const option = await getFetchOption('/proxies');
+  const { mode } = op || {};
+  const { proxies } = await got.get(option.url, option.option).json<API.Proxies>();
   const GLOBAL = proxies.GLOBAL as API.Group;
   const policyGroup = new Set(['Selector', 'URLTest', 'Fallback', 'LoadBalance']);
   const unUsedProxy = new Set(['DIRECT', 'REJECT', 'GLOBAL']);
@@ -32,9 +40,11 @@ export const fetchClashGroups = async () => {
     .filter(key => !unUsedProxy.has(key))
     .map(key => ({ ...proxies[key], name: key }))
     .filter(it => policyGroup.has(it.type)) as API.Group[];
+  if (mode === 'global') groups.unshift(GLOBAL);
   return groups;
 };
 
 export const fetchSetClashGroups = async (op: { group: string; value: string }) => {
-  return await got.put(`http://${extCtl}/proxies/${encodeURIComponent(op.group)}`, { json: { name: op.value } });
+  const option = await getFetchOption(`/proxies/${encodeURIComponent(op.group)}`);
+  return await got.put(option.url, { ...option.option, json: { name: op.value } });
 };

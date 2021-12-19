@@ -1,12 +1,13 @@
-import { app, Menu, Tray } from 'electron';
+import { app, BrowserWindow, Menu, Tray } from 'electron';
 import debounce from 'lodash.debounce';
 
-import { autoSetProxy, path } from './utils';
+import { autoSetProxy, path, restartClash } from './utils';
 import { resourcesPath } from './const';
 import { platform } from './os';
 import { showWindow } from './window';
 import { fetchClashConfig, fetchSetClashConfig, fetchClashGroups, fetchSetClashGroups } from './fetch';
 import { clearProxy, getProxyState } from './proxy';
+import { getConfig, setConfig } from './config';
 
 // 防止gc回收
 // https://blog.csdn.net/liu19721018/article/details/109046186
@@ -16,9 +17,10 @@ interface BuildMenu {
   sysProxy?: boolean;
   mode?: 'global' | 'rule' | 'direct' | 'script';
   groups?: API.Group[];
+  config: Config;
 }
 export const buildMenu = (op?: BuildMenu) => {
-  const { sysProxy = false, mode, groups = [] } = op || {};
+  const { sysProxy = false, mode, groups = [], config } = op || {};
   return Menu.buildFromTemplate([
     {
       label: `出站规则(${mode})`,
@@ -76,6 +78,20 @@ export const buildMenu = (op?: BuildMenu) => {
       }))
     },
     {
+      label: '配置',
+      type: 'submenu',
+      submenu: config?.list.map(it => ({
+        label: it.name,
+        type: 'radio',
+        checked: it.name === config.selected,
+        async click() {
+          if (config.selected === it.name) return;
+          await setConfig({ ...config, selected: it.name });
+          await restartClash();
+        }
+      }))
+    },
+    {
       label: '设置为系统代理',
       type: 'checkbox',
       checked: sysProxy,
@@ -87,6 +103,13 @@ export const buildMenu = (op?: BuildMenu) => {
       label: '控制台',
       type: 'normal',
       click: showWindow
+    },
+    {
+      label: '打开DevTools',
+      type: 'normal',
+      click() {
+        BrowserWindow.getAllWindows().forEach(it => it.webContents.openDevTools());
+      }
     },
     {
       label: '退出',
@@ -105,9 +128,11 @@ export const updateTray = async () => {
   if (!tray) return;
   console.log('updateTray');
   console.time('updateTray');
-  const config = await fetchClashConfig();
-  const groups = await fetchClashGroups();
-  const menu = buildMenu({ sysProxy: getProxyState().http.enable, mode: config.mode, groups });
+  const clashConfig = await fetchClashConfig();
+  const groups = await fetchClashGroups({ mode: clashConfig.mode });
+  const config = await getConfig();
+
+  const menu = buildMenu({ sysProxy: getProxyState().http.enable, mode: clashConfig.mode, groups, config });
   tray.setContextMenu(menu);
   console.timeEnd('updateTray');
 };
@@ -119,7 +144,7 @@ export const setTray = () => {
   tray.on('click', async () => {
     console.log('click me');
     if (platform === 'win32') return showWindow();
-    await updateTray();
+    // await updateTray();
   });
 
   // win11 not support
@@ -127,13 +152,13 @@ export const setTray = () => {
   //   console.log('right-click');
   // });
 
-  // compatible with win11
-  tray.on('mouse-move', debounce(updateTray, 1000, { leading: true, trailing: false }));
-
-  // TODO waiting test mac
-  tray.on('mouse-enter', () => {
-    console.log('mouse-enter');
-  });
+  if (platform === 'win32') {
+    // win useage
+    tray.on('mouse-move', debounce(updateTray, 1000, { leading: true, trailing: false }));
+  } else {
+    // mac useage
+    tray.on('mouse-enter', updateTray);
+  }
   updateTray();
 };
 

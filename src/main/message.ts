@@ -1,12 +1,12 @@
 import { ipcMain } from 'electron';
-import { extCtl } from './const';
+import { getApiInfo } from './config';
 import { clearProxy, getProxyState } from './proxy';
 import { autoSetProxy } from './utils';
 
 export const initMessage = () => {
-  ipcMain.on('get-api-info', event => {
-    const [host, port] = extCtl.split(':');
-    event.reply('api-info', { host, port, secret: '' });
+  ipcMain.on('get-api-info', async event => {
+    const apiInfo = await getApiInfo();
+    event.reply('api-info', apiInfo);
   });
 
   ipcMain.on('get-proxy-state', event => {

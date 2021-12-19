@@ -15,4 +15,3 @@ export const clashDefaultConfigPath = path.join(clashConfigDir, 'config.yaml');
 
 export const configPath = path.join(clashConfigDir, '.config.yaml');
 
-export const extCtl: HostPort = '127.0.0.1:9090';
