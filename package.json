@@ -1,6 +1,6 @@
 {
   "name": "electron-clash-pro",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "./dist/index.js",
   "author": {
@@ -42,95 +42,5 @@
     "lodash.debounce": "^4.0.8",
     "proxy-agent": "^5.0.0",
     "tslib": "^2.3.1"
-  },
-  "build": {
-    "appId": "com.csj8520.clash.pro",
-    "removePackageScripts": true,
-    "compression": "normal",
-    "asar": false,
-    "artifactName": "ElectronClashPro-${platform}-${arch}-${version}.${ext}",
-    "extraResources": [
-      {
-        "from": "clash",
-        "to": "clash"
-      },
-      {
-        "from": "clash-dashboard/dist",
-        "to": "clash-dashboard/dist"
-      },
-      {
-        "from": "assets",
-        "to": "assets"
-      }
-    ],
-    "directories": {
-      "output": "builder"
-    },
-    "files": [
-      "dist/**/*"
-    ],
-    "publish": {
-      "provider": "github",
-      "vPrefixedTagName": true
-    },
-    "win": {
-      "icon": "assets/icon.png",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "files": [
-        "node_modules/7zip-bin/**/*",
-        "!node_modules/7zip-bin/linux/**",
-        "!node_modules/7zip-bin/mac/**"
-      ]
-    },
-    "mac": {
-      "icon": "assets/icon.png",
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "files": [
-        "node_modules/7zip-bin/**/*",
-        "!node_modules/7zip-bin/linux/**",
-        "!node_modules/7zip-bin/win/**"
-      ]
-    },
-    "linux": {
-      "icon": "assets/icon.png",
-      "target": [
-        {
-          "target": "deb",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        },
-        {
-          "target": "AppImage",
-          "arch": [
-            "x64",
-            "arm64"
-          ]
-        }
-      ],
-      "files": [
-        "node_modules/7zip-bin/**/*",
-        "!node_modules/7zip-bin/mac/**",
-        "!node_modules/7zip-bin/win/**"
-      ]
-    }
-  },
-  "external": []
+  }
 }
