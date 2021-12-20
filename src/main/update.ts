@@ -7,7 +7,6 @@ import { agent, getLocalClashVersion, fs, path } from './utils';
 import { clashDir, clashPath, tempDir } from './const';
 
 // https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
-// https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
 export const getClashLatestVersion = async () => {
   if (!osType) throw new Error('unsupport this platform');
   const data: any = await got.get('https://api.github.com/repos/Dreamacro/clash/releases/tags/premium', { agent }).json();
