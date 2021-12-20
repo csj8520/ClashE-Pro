@@ -22,13 +22,12 @@ export const createWindow = async () => {
   return mainWindow;
 };
 
-export const getMainWindow = () => (mainWindow?.isDestroyed ? null : mainWindow);
+export const getMainWindow = () => (mainWindow?.isDestroyed() ? null : mainWindow);
 
 export const showWindow = () => {
-  const allWindow = BrowserWindow.getAllWindows();
-  if (allWindow.length === 0) {
+  if (!mainWindow || mainWindow.isDestroyed()) {
     createWindow();
   } else {
-    allWindow.forEach(it => it.show());
+    mainWindow.show();
   }
 };

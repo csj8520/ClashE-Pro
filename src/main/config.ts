@@ -42,7 +42,22 @@ export const copyDefaultConfig = async () => {
 export const initConfig = async () => {
   const files = (await fs.readdir(clashConfigDir)).filter(it => /^[^.].+\.ya?ml$/.test(it));
   const config = await getConfig();
-  config.list = config.list.filter(it => files.includes(it.name));
+  // config.list = config.list.filter(it => files.includes(it.name));
+  const list: typeof config['list'] = [];
+  for (const it of config.list) {
+    if (files.includes(it.name)) {
+      list.push(it);
+    } else if (it.sub) {
+      try {
+        await updateRemoteConfig(it.name, it.sub);
+        list.push(it);
+      } catch (error) {
+        console.log('error: ', error);
+      }
+    }
+  }
+  config.list = list;
+
   const names = config.list.map(it => it.name);
   const added = files.filter(it => !names.includes(it)).map(it => ({ name: it, updateTime: 0 }));
   config.list.push(...added);
@@ -70,12 +85,12 @@ export const setConfig = async (config: Config) => {
   return config;
 };
 
-export const getClashConfig = async (name: string) => {
+export const getClashConfig = async (name: string): Promise<{ [key: string]: any }> => {
   const key = `clash-config-${name}`;
   if (cache.has(key)) return cache.get(key);
   const config = yaml.load((await fs.readFile(path.join(clashConfigDir, name))).toString());
   cache.set(key, config);
-  return config;
+  return config as any;
 };
 
 export const getApiInfo = async (): Promise<Record<'host' | 'port' | 'secret', string>> => {
@@ -92,8 +107,10 @@ export const getApiInfo = async (): Promise<Record<'host' | 'port' | 'secret', s
 
 export const updateRemoteConfig = async (name: string, sub: string) => {
   console.log(`Start Update Sub: ${name}`);
+  const key = `clash-config-${name}`;
   const text = await got.get(sub).text();
   await fs.writeFile(path.join(clashConfigDir, name), text);
+  cache.set(key, yaml.load(text));
   const config = await getConfig();
   const idx = config.list.findIndex(it => it.name === name);
   config.list.splice(idx, 1, { ...config.list[idx], updateTime: Date.now() });
@@ -120,3 +137,5 @@ export const autoUpdateAllRemoteConfig = async () => {
     }, config.updateInterval * 1000 - (Date.now() - it.updateTime));
   }
 };
+
+export const clearConfigCache = () => cache.clear();

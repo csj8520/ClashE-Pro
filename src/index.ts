@@ -1,15 +1,24 @@
-import { app, BrowserWindow, Menu, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 
 import { platform } from './main/os';
 import { clashRun, killClash } from './main/clash';
 import { clearProxy } from './main/proxy';
 import { autoSetProxy, fs } from './main/utils';
-import { autoUpdateAllRemoteConfig, copyDefaultConfig, initConfig, updateAllRemoteConfig } from './main/config';
+import { autoUpdateAllRemoteConfig, copyDefaultConfig, initConfig } from './main/config';
 import { clashConfigDir, clashDir, tempDir } from './main/const';
-import { createWindow } from './main/window';
+import { createWindow, showWindow } from './main/window';
 import { setTray, setAppMenu } from './main/menu';
 import { fixJsMime } from './main/fix-js-mime';
 import { initMessage } from './main/message';
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    showWindow();
+  });
+}
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
