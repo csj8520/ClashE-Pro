@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: release
+on:
+  push:
+    branches:
+      - master
+jobs:
+  release:
+    if: contains(github.event.head_commit.message, 'release')
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Cache Modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.pnpm-store
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install pnpm
+        run: npm i -g pnpm
+
+      - name: Install Dependencies
+        run: npm run init
+
+      - name: Install snapcraft
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo snap install snapcraft --classic
+
+      - name: Build
+        run: npm run release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Get Version
+      #   id: package_version
+      #   uses: martinbeentjes/npm-get-version-action@master
+
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: v0.0.0
+      #     release_name: Release 0.0.0
+      #     body: ${{ github.event.head_commit.message }}
+      #     draft: true
+      #     prerelease: false
+
+      # - uses: xresloader/upload-to-github-release@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     file: "builder/ElectronClashPro-*"
+      #     delete_file: "builder/ElectronClashPro-*.blockmap"
+      #     release_id: ${{ steps.create_release.outputs.id }}
+      #     overwrite: true
+      #     verbose: true
