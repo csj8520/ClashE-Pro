@@ -25,6 +25,8 @@ export const getClashLatestVersion = async () => {
 };
 
 export const downloadClsh = async (latest: AsyncReturn<typeof getClashLatestVersion>) => {
+  !(await fs.pathExists(tempDir)) && (await fs.mkdir(tempDir));
+  !(await fs.pathExists(clashDir)) && (await fs.mkdir(clashDir));
   const downloadPath = path.join(tempDir, latest.filesName);
   const dpip = createWriteStream(downloadPath);
 
@@ -53,7 +55,7 @@ export const downloadClsh = async (latest: AsyncReturn<typeof getClashLatestVers
   console.log(`Download Success current version is: ${currentVersion}`);
 };
 
-export const updatClash = async () => {
+export const updateClash = async () => {
   const currentVersion = await getLocalClashVersion();
   const latest = await getClashLatestVersion();
   if (new Date(latest.version).getTime() > new Date(currentVersion).getTime()) {

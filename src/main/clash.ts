@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 
 import { getLocalClashVersion, path, delay } from './utils';
 
-import { updatClash } from './update';
+import { updateClash } from './update';
 import { clashConfigDir, clashPath, resourcesPath } from './const';
 import { getApiInfo } from './config';
 import { fetchClash } from './fetch';
@@ -12,7 +12,7 @@ let clashProcess: AsyncReturn<typeof clashRun> | null = null;
 
 export const clashRun = async (config: string) => {
   const localVersion = await getLocalClashVersion();
-  if (localVersion == '0') await updatClash();
+  if (localVersion == '0') await updateClash();
 
   const uiDir = path.join(resourcesPath, 'clash-dashboard/dist');
   const apiInfo = await getApiInfo();

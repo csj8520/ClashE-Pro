@@ -40,6 +40,7 @@ export const copyDefaultConfig = async () => {
 };
 
 export const initConfig = async () => {
+  !(await fs.pathExists(clashConfigDir)) && (await fs.mkdirs(clashConfigDir));
   const files = (await fs.readdir(clashConfigDir)).filter(it => /^[^.].+\.ya?ml$/.test(it));
   const config = await getConfig();
   // config.list = config.list.filter(it => files.includes(it.name));

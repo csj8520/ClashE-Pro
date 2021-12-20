@@ -5,7 +5,6 @@ import { clashRun, killClash } from './main/clash';
 import { clearProxy } from './main/proxy';
 import { autoSetProxy, fs } from './main/utils';
 import { autoUpdateAllRemoteConfig, copyDefaultConfig, initConfig } from './main/config';
-import { clashConfigDir, clashDir, tempDir } from './main/const';
 import { createWindow, showWindow } from './main/window';
 import { setTray, setAppMenu } from './main/menu';
 import { fixJsMime } from './main/fix-js-mime';
@@ -39,10 +38,6 @@ app.on('ready', async () => {
   initMessage();
 
   platform === 'win32' && fixJsMime();
-
-  !(await fs.pathExists(tempDir)) && (await fs.mkdir(tempDir));
-  !(await fs.pathExists(clashDir)) && (await fs.mkdir(clashDir));
-  !(await fs.pathExists(clashConfigDir)) && (await fs.mkdirs(clashConfigDir));
 
   await copyDefaultConfig();
   const config = await initConfig();
