@@ -38,12 +38,13 @@ rules:
 `;
 
 export const copyDefaultConfig = async () => {
+  (await fs.pathExists(DIR.config())) || (await fs.mkdirs(DIR.config()));
   if (await fs.pathExists(FILE.defClashConf())) return;
   await fs.writeFile(FILE.defClashConf(), clashDefaultConfig);
 };
 
 export const initConfig = async () => {
-  !(await fs.pathExists(DIR.config())) && (await fs.mkdirs(DIR.config()));
+  (await fs.pathExists(DIR.config())) || (await fs.mkdirs(DIR.config()));
   const files = (await fs.readdir(DIR.config())).filter(it => /^[^.].+\.ya?ml$/.test(it));
   const config = await getConfig();
   // config.list = config.list.filter(it => files.includes(it.name));
@@ -83,6 +84,7 @@ export const getConfig = async (): Promise<Config> => {
 export const setConfig = async (config: Config) => {
   console.log('setConfig');
   console.time('setConfig');
+  (await fs.pathExists(DIR.config())) || (await fs.mkdirs(DIR.config()));
   await fs.writeFile(FILE.config(), yaml.dump(config));
   cache.set('config', config);
   console.timeEnd('setConfig');
