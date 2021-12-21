@@ -45,6 +45,7 @@ export const download = async ({ url, filename }: { filename: string; url: strin
   !(await fs.pathExists(tempDir)) && (await fs.mkdir(tempDir));
   const downloadPath = path.join(tempDir, filename);
   const dpip = createWriteStream(downloadPath);
+  console.log(`Download Start: ${url}`);
   await new Promise<void>(res =>
     got
       .get(url, { isStream: true, agent })
@@ -52,6 +53,7 @@ export const download = async ({ url, filename }: { filename: string; url: strin
       .pipe(dpip)
       .on('close', res)
   );
+  console.log(`Download Success: ${url}`);
   return downloadPath;
 };
 

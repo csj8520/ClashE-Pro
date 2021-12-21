@@ -14,6 +14,7 @@ build({
     async beforePack(ctx) {
       const platform = ctx.electronPlatformName as any;
       const arch = Arch[ctx.arch];
+      console.log(`Start Building platform: ${platform}, arch: ${arch}`);
       const bin = getClashArch({ platform, arch }).bin;
       process.env.clashBin = bin;
       (await fs.pathExists(path.join(__dirname, '../clash', bin))) || (await downloadLatestClash({ platform, arch }));
@@ -29,7 +30,10 @@ build({
     },
     publish: {
       provider: 'github',
-      vPrefixedTagName: true
+      owner: 'csj8520',
+      repo: 'electron-clash-pro',
+      vPrefixedTagName: true,
+      releaseType: 'draft'
     },
     win: {
       icon: 'assets/icon.png',
