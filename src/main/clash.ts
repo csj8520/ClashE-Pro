@@ -1,24 +1,25 @@
-import got from 'got';
 import { spawn } from 'child_process';
+import path from 'path';
 
-import { getLocalClashVersion, path, delay } from './utils';
+import { delay } from './utils';
+import { getClashArch } from '../lib/get-clash';
+import { DIR } from '../lib/paths';
 
-import { updateClash } from './update';
-import { clashConfigDir, clashPath, resourcesPath } from './const';
 import { getApiInfo } from './config';
 import { fetchClash } from './fetch';
+import { downloadLatestClash, getLocalClashVersion } from '../lib/get-clash';
+import { arch, platform } from '../lib/os';
 
 let clashProcess: AsyncReturn<typeof clashRun> | null = null;
 
 export const clashRun = async (config: string) => {
   const localVersion = await getLocalClashVersion();
-  if (localVersion == '0') await updateClash();
-
-  const uiDir = path.join(resourcesPath, 'clash-dashboard/dist');
+  if (localVersion == '0') await downloadLatestClash({ platform, arch });
   const apiInfo = await getApiInfo();
+  const clashInfo = getClashArch({ platform, arch })!;
   const clash = spawn(
-    clashPath,
-    ['-d', clashConfigDir, '-f', path.join(clashConfigDir, config), '-ext-ctl', `${apiInfo.host}:${apiInfo.port}`, '-ext-ui', uiDir],
+    path.join(DIR.clash(), clashInfo.bin),
+    ['-d', DIR.config(), '-f', path.join(DIR.config(), config), '-ext-ctl', `${apiInfo.host}:${apiInfo.port}`, '-ext-ui', DIR.ui()],
     { windowsHide: true }
   );
   clashProcess = clash;

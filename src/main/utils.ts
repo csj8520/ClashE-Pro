@@ -1,31 +1,12 @@
 import fs from 'fs-extra';
-import ProxyAgent from 'proxy-agent';
-import { execSync } from 'child_process';
 
-import { setProxy } from './proxy';
-import { clashPath } from './const';
+import { setProxy } from '../lib/proxy';
 import { fetchClashConfig } from './fetch';
 import { clashRun, killClash } from './clash';
 import { getConfig, getApiInfo } from './config';
 import { getMainWindow } from './window';
 
-export { default as fs } from 'fs-extra';
-export { default as path } from 'path';
-export { default as yaml } from 'js-yaml';
-
-const proxyAgent = new ProxyAgent();
-
-export const agent = { http: proxyAgent, https: proxyAgent, http2: proxyAgent };
-
 export const delay = (t: number) => new Promise(res => setTimeout(res, t));
-
-export const getLocalClashVersion = async () => {
-  const hasClash = await fs.pathExists(clashPath);
-  if (!hasClash) return '0';
-  const out = execSync(`${clashPath} -v`, { windowsHide: true }).toString().trim();
-  console.log(out);
-  return out.replace(/^Clash (\d+\.\d+\.\d+) (.|\n)+$/, '$1');
-};
 
 export const autoSetProxy = async () => {
   const _config = await fetchClashConfig();

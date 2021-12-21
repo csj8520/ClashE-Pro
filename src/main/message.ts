@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { getApiInfo } from './config';
-import { clearProxy, getProxyState } from './proxy';
+import { clearProxy, getProxyState } from '../lib/proxy';
 import { autoSetProxy } from './utils';
 
 export const initMessage = () => {

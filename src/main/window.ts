@@ -1,7 +1,8 @@
 import { app, BrowserWindow } from 'electron';
-import { path } from './utils';
-import { resourcesPath } from './const';
+import path from 'path';
+
 import { getApiInfo } from './config';
+import { DIR } from '../lib/paths';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -9,7 +10,7 @@ export const createWindow = async () => {
   mainWindow = new BrowserWindow({
     height: 600,
     width: 1200,
-    icon: path.join(resourcesPath, 'assets/icon.png'),
+    icon: path.join(DIR.assets(), 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: false,

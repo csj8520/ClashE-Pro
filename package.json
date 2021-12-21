@@ -1,6 +1,6 @@
 {
   "name": "electron-clash-pro",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "",
   "main": "./dist/index.js",
   "author": {
@@ -15,13 +15,11 @@
     "init": "git submodule init && git submodule update && pnpm i && cd clash-dashboard && pnpm i && npm run build",
     "build": "tsc",
     "watch": "tsc -w",
-    "lint": "eslint -c .eslintrc --ext .ts ./src",
     "start": "npm run build && electron ./dist/index.js",
-    "dev:web": "cd clash-dashboard && npm start",
-    "build:web": "cd clash-dashboard && npm run build",
-    "pack": "npm run build && electron-builder",
-    "download": "node -e \"require('./dist/main/update.js').updateClash()\"",
-    "release": "npm run build && npm run download  && electron-builder --publish always"
+    "dev:ui": "cd clash-dashboard && npm start",
+    "build:ui": "cd clash-dashboard && npm run build",
+    "pack": "npm run build && esno ./script/release.ts --dir",
+    "release": "npm run build && esno ./script/release.ts --publish"
   },
   "keywords": [],
   "license": "ISC",
@@ -32,6 +30,7 @@
     "@types/lodash.debounce": "^4.0.6",
     "electron": "^16.0.4",
     "electron-builder": "^22.14.5",
+    "esno": "^0.13.0",
     "typescript": "^4.5.3"
   },
   "dependencies": {

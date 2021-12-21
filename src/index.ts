@@ -1,9 +1,9 @@
 import { app, BrowserWindow } from 'electron';
 
-import { platform } from './main/os';
+import { platform } from './lib/os';
 import { clashRun, killClash } from './main/clash';
-import { clearProxy } from './main/proxy';
-import { autoSetProxy, fs } from './main/utils';
+import { clearProxy } from './lib/proxy';
+import { autoSetProxy } from './main/utils';
 import { autoUpdateAllRemoteConfig, copyDefaultConfig, initConfig } from './main/config';
 import { createWindow, showWindow } from './main/window';
 import { setTray, setAppMenu } from './main/menu';
@@ -19,22 +19,10 @@ if (!gotTheLock) {
   });
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on('ready', async () => {
-  // ipcMain.on('get-debug-log', event => {
-  //   const write = process.stdout.write;
-  //   process.stdout.write = (...args: any) => {
-  //     event.reply('debug-log', args[0].toString());
-  //     return write.apply(process.stdout, args);
-  //   };
-  // });
+  process.env.TEMP = app.getPath('temp');
+  process.env.HOME = app.getPath('home');
 
-  console.log('getAppPath', app.getPath('temp'));
-
-  setTray();
-  setAppMenu();
   initMessage();
 
   platform === 'win32' && fixJsMime();
@@ -48,23 +36,17 @@ app.on('ready', async () => {
 
   config.autoSetProxy && (await autoSetProxy());
 
+  setAppMenu();
   await createWindow();
+  setTray();
 
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
-  // if (process.platform !== 'darwin') {
-  //   app.quit();
-  // }
-});
+// 必须监听此事件，否则会自动退出
+app.on('window-all-closed', () => {});
 
 app.on('will-quit', async () => {
   clearProxy();

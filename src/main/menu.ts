@@ -1,13 +1,14 @@
 import { app, BrowserWindow, Menu, MenuItemConstructorOptions, Tray, shell } from 'electron';
 import debounce from 'lodash.debounce';
+import path from 'path';
 
-import { autoSetProxy, path, restartClash } from './utils';
-import { configPath, resourcesPath } from './const';
-import { platform } from './os';
+import { autoSetProxy, restartClash } from './utils';
+import { platform } from '../lib/os';
 import { showWindow } from './window';
 import { fetchClashConfig, fetchSetClashConfig, fetchClashGroups, fetchSetClashGroups } from './fetch';
-import { clearProxy, getProxyState } from './proxy';
+import { clearProxy, getProxyState } from '../lib/proxy';
 import { clearConfigCache, getConfig, setConfig, updateAllRemoteConfig } from './config';
+import { DIR, FILE } from '../lib/paths';
 
 // 防止gc回收
 // https://blog.csdn.net/liu19721018/article/details/109046186
@@ -68,7 +69,7 @@ export const buildMenu = (op?: BuildMenu) => {
     label: '打开配置文件夹',
     type: 'normal',
     click() {
-      shell.showItemInFolder(configPath);
+      shell.showItemInFolder(FILE.config());
     }
   });
   return Menu.buildFromTemplate([
@@ -169,7 +170,7 @@ export const updateTray = async () => {
 };
 
 export const setTray = () => {
-  tray = new Tray(path.join(resourcesPath, 'assets/tray.png'));
+  tray = new Tray(path.join(DIR.assets(), 'tray.png'));
 
   tray.setToolTip('Clash Pro');
   tray.on('click', async () => {

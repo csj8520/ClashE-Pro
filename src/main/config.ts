@@ -1,6 +1,9 @@
 import got from 'got';
-import { fs, path, yaml } from './utils';
-import { clashConfigDir, clashDefaultConfigPath, configPath } from './const';
+import path from 'path';
+import fs from 'fs-extra';
+import yaml from 'js-yaml';
+
+import { DIR, FILE } from '../lib/paths';
 
 const cache = new Map();
 
@@ -35,13 +38,13 @@ rules:
 `;
 
 export const copyDefaultConfig = async () => {
-  if (await fs.pathExists(clashDefaultConfigPath)) return;
-  await fs.writeFile(clashDefaultConfigPath, clashDefaultConfig);
+  if (await fs.pathExists(FILE.defClashConf())) return;
+  await fs.writeFile(FILE.defClashConf(), clashDefaultConfig);
 };
 
 export const initConfig = async () => {
-  !(await fs.pathExists(clashConfigDir)) && (await fs.mkdirs(clashConfigDir));
-  const files = (await fs.readdir(clashConfigDir)).filter(it => /^[^.].+\.ya?ml$/.test(it));
+  !(await fs.pathExists(DIR.config())) && (await fs.mkdirs(DIR.config()));
+  const files = (await fs.readdir(DIR.config())).filter(it => /^[^.].+\.ya?ml$/.test(it));
   const config = await getConfig();
   // config.list = config.list.filter(it => files.includes(it.name));
   const list: typeof config['list'] = [];
@@ -70,8 +73,8 @@ export const getConfig = async (): Promise<Config> => {
   if (cache.has('config')) return cache.get('config');
   let config: Config = { selected: '', updateInterval: 86400, autoSetProxy: true, list: [] };
 
-  if (await fs.pathExists(configPath)) {
-    const _config = yaml.load((await fs.readFile(configPath)).toString()) as Config;
+  if (await fs.pathExists(FILE.config())) {
+    const _config = yaml.load((await fs.readFile(FILE.config())).toString()) as Config;
     Object.assign(config, _config);
   }
   cache.set('config', config);
@@ -80,7 +83,7 @@ export const getConfig = async (): Promise<Config> => {
 export const setConfig = async (config: Config) => {
   console.log('setConfig');
   console.time('setConfig');
-  await fs.writeFile(configPath, yaml.dump(config));
+  await fs.writeFile(FILE.config(), yaml.dump(config));
   cache.set('config', config);
   console.timeEnd('setConfig');
   return config;
@@ -89,7 +92,7 @@ export const setConfig = async (config: Config) => {
 export const getClashConfig = async (name: string): Promise<{ [key: string]: any }> => {
   const key = `clash-config-${name}`;
   if (cache.has(key)) return cache.get(key);
-  const config = yaml.load((await fs.readFile(path.join(clashConfigDir, name))).toString());
+  const config = yaml.load((await fs.readFile(path.join(DIR.config(), name))).toString());
   cache.set(key, config);
   return config as any;
 };
@@ -110,7 +113,7 @@ export const updateRemoteConfig = async (name: string, sub: string) => {
   console.log(`Start Update Sub: ${name}`);
   const key = `clash-config-${name}`;
   const text = await got.get(sub).text();
-  await fs.writeFile(path.join(clashConfigDir, name), text);
+  await fs.writeFile(path.join(DIR.config(), name), text);
   cache.set(key, yaml.load(text));
   const config = await getConfig();
   const idx = config.list.findIndex(it => it.name === name);
