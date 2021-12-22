@@ -2,11 +2,11 @@ import { app, BrowserWindow, Menu, MenuItemConstructorOptions, Tray, shell } fro
 import debounce from 'lodash.debounce';
 import path from 'path';
 
-import { autoSetProxy, reload } from './utils';
+import { autoSetProxy, reload, systemProxyIsEnable } from './utils';
 import { platform } from '../lib/os';
 import { showWindow } from './window';
 import { fetchClashConfig, fetchSetClashConfig, fetchClashGroups, fetchSetClashGroups } from './fetch';
-import { clearProxy, getProxyState } from '../lib/proxy';
+import { clearProxy } from '../lib/proxy';
 import { clearConfigCache, getConfig, setConfig, updateAllRemoteConfig } from './config';
 import { DIR, FILE } from '../lib/paths';
 
@@ -23,19 +23,19 @@ interface BuildMenu {
 export const buildMenu = (op?: BuildMenu) => {
   const { sysProxy = false, mode = 'unknow', groups = [], config } = op || {};
 
-  // const policy: MenuItemConstructorOptions[] = groups.map(it => ({
-  //   label: it.name,
-  //   type: 'submenu',
-  //   submenu: it.all.map(t => ({
-  //     label: t,
-  //     type: 'radio',
-  //     checked: it.now === t,
-  //     enabled: it.type === 'Selector',
-  //     click() {
-  //       fetchSetClashGroups({ group: it.name, value: t });
-  //     }
-  //   }))
-  // }));
+  const policy: MenuItemConstructorOptions[] = groups.map(it => ({
+    label: it.name,
+    type: 'submenu',
+    submenu: it.all.map(t => ({
+      label: t,
+      type: 'radio',
+      checked: it.now === t,
+      enabled: it.type === 'Selector',
+      click() {
+        fetchSetClashGroups({ group: it.name, value: t });
+      }
+    }))
+  }));
 
   const configMenu: MenuItemConstructorOptions[] =
     config?.list.map(it => ({
@@ -73,63 +73,62 @@ export const buildMenu = (op?: BuildMenu) => {
     }
   });
   return Menu.buildFromTemplate([
-    // 功能重复感觉没必要
-    // {
-    //   label: `出站规则(${mode})`,
-    //   type: 'submenu',
-    //   submenu: [
-    //     {
-    //       label: '全局连接',
-    //       type: 'radio',
-    //       checked: mode === 'global',
-    //       click() {
-    //         fetchSetClashConfig({ mode: 'global' });
-    //       }
-    //     },
-    //     {
-    //       label: '规则判断',
-    //       type: 'radio',
-    //       checked: mode === 'rule',
-    //       click() {
-    //         fetchSetClashConfig({ mode: 'rule' });
-    //       }
-    //     },
-    //     {
-    //       label: '脚本模式',
-    //       type: 'radio',
-    //       checked: mode === 'script',
-    //       click() {
-    //         fetchSetClashConfig({ mode: 'script' });
-    //       }
-    //     },
-    //     {
-    //       label: '直接连接',
-    //       type: 'radio',
-    //       checked: mode === 'direct',
-    //       click() {
-    //         fetchSetClashConfig({ mode: 'direct' });
-    //       }
-    //     }
-    //   ]
-    // },
-    // {
-    //   label: '策略组',
-    //   type: 'submenu',
-    //   submenu: policy
-    // },
+    {
+      label: `出站规则(${mode})`,
+      type: 'submenu',
+      submenu: [
+        {
+          label: '全局连接',
+          type: 'radio',
+          checked: mode === 'global',
+          click() {
+            fetchSetClashConfig({ mode: 'global' });
+          }
+        },
+        {
+          label: '规则判断',
+          type: 'radio',
+          checked: mode === 'rule',
+          click() {
+            fetchSetClashConfig({ mode: 'rule' });
+          }
+        },
+        {
+          label: '脚本模式',
+          type: 'radio',
+          checked: mode === 'script',
+          click() {
+            fetchSetClashConfig({ mode: 'script' });
+          }
+        },
+        {
+          label: '直接连接',
+          type: 'radio',
+          checked: mode === 'direct',
+          click() {
+            fetchSetClashConfig({ mode: 'direct' });
+          }
+        }
+      ]
+    },
+    {
+      label: '策略组',
+      type: 'submenu',
+      submenu: policy
+    },
     {
       label: '配置',
       type: 'submenu',
       submenu: configMenu
     },
-    // {
-    //   label: '设置为系统代理',
-    //   type: 'checkbox',
-    //   checked: sysProxy,
-    //   click(it) {
-    //     it.checked ? autoSetProxy() : clearProxy();
-    //   }
-    // },
+    {
+      label: '设置为系统代理',
+      type: 'checkbox',
+      checked: sysProxy,
+      click(it) {
+        it.checked ? autoSetProxy() : clearProxy();
+      }
+    },
     {
       label: '控制台',
       type: 'normal',
@@ -159,12 +158,11 @@ export const updateTray = async () => {
   if (!tray) return;
   console.log('updateTray');
   console.time('updateTray');
-  // const clashConfig = await fetchClashConfig();
-  // const groups = await fetchClashGroups({ mode: clashConfig.mode });
+  const clashConfig = await fetchClashConfig();
+  const groups = await fetchClashGroups({ mode: clashConfig.mode });
   const config = await getConfig();
 
-  // const menu = buildMenu({ sysProxy: getProxyState().http.enable, mode: clashConfig.mode, groups, config });
-  const menu = buildMenu({ config });
+  const menu = buildMenu({ sysProxy: await systemProxyIsEnable(), mode: clashConfig.mode, groups, config });
   tray.setContextMenu(menu);
   console.timeEnd('updateTray');
 };

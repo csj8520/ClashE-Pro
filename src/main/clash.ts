@@ -27,6 +27,7 @@ export const clashRun = async (config: string) => {
   clash.stderr.pipe(process.stderr);
 
   while (true) {
+    console.log('waiting Clash start...');
     await delay(500);
     const res = await fetchClash();
     if (res?.hello === 'clash') return clash;

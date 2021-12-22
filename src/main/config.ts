@@ -100,15 +100,15 @@ export const getClashConfig = async (name: string): Promise<{ [key: string]: any
 };
 
 export const getApiInfo = async (): Promise<Record<'host' | 'port' | 'secret', string>> => {
-  console.log('getApiInfo');
-  console.time('getApiInfo');
+  if (cache.has('api-info')) return cache.get('api-info');
   const { selected } = await getConfig();
   const clashConfig = (await getClashConfig(selected)) as any;
   const _extCtl = clashConfig?.['external-controller'] || '127.0.0.1:9090';
   const secret = clashConfig?.secret || '';
   const [host, port] = _extCtl.split(':');
-  console.timeEnd('getApiInfo');
-  return { host: host === '0.0.0.0' ? '127.0.0.1' : host, port, secret };
+  const info = { host: host === '0.0.0.0' ? '127.0.0.1' : host, port, secret };
+  cache.set('api-info', info);
+  return info;
 };
 
 export const updateRemoteConfig = async (name: string, sub: string) => {
