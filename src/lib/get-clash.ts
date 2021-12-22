@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import { createWriteStream } from 'fs';
 import { agent } from './agent';
 import { arch, platform } from './os';
+import { execAsync } from './utils';
 
 export const osTypes: Array<{ name: string; os: NodeJS.Platform; arch: Arch[]; bin: string }> = [
   { name: 'clash-darwin-amd64-{version}.gz', bin: 'clash-darwin-amd64', os: 'darwin', arch: ['x64'] },
@@ -85,7 +86,7 @@ export const getLocalClashVersion = async () => {
   const bin = path.join(__dirname, '../../clash', clashInfo.bin);
   const hasClash = await fs.pathExists(bin);
   if (!hasClash) return '0';
-  const out = execSync(`${bin} -v`, { windowsHide: true }).toString().trim();
+  const out = await execAsync(`${bin} -v`);
   console.log(out);
   return out.replace(/^Clash (\d+\.\d+\.\d+) (.|\n)+$/, '$1');
 };

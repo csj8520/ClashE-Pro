@@ -10,7 +10,6 @@ export class JsBridgeAPI {
     this._handles.set(eventName, fns);
   }
   public callHandler(handleName: string, data?: any, responseCallback?: (...args: any) => void) {
-    console.log(handleName, data, responseCallback);
     const fns = this._handles.get(handleName) || [];
     fns.forEach(it => it(data, responseCallback));
   }

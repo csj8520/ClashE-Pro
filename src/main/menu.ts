@@ -2,7 +2,7 @@ import { app, BrowserWindow, Menu, MenuItemConstructorOptions, Tray, shell } fro
 import debounce from 'lodash.debounce';
 import path from 'path';
 
-import { autoSetProxy, restartClash } from './utils';
+import { autoSetProxy, reload } from './utils';
 import { platform } from '../lib/os';
 import { showWindow } from './window';
 import { fetchClashConfig, fetchSetClashConfig, fetchClashGroups, fetchSetClashGroups } from './fetch';
@@ -45,7 +45,7 @@ export const buildMenu = (op?: BuildMenu) => {
       async click() {
         if (config.selected === it.name) return;
         await setConfig({ ...config, selected: it.name });
-        await restartClash();
+        await reload();
       }
     })) ?? [];
   configMenu.push({ type: 'separator' });
@@ -54,7 +54,7 @@ export const buildMenu = (op?: BuildMenu) => {
     type: 'normal',
     async click() {
       await updateAllRemoteConfig();
-      await restartClash();
+      await reload();
     }
   });
   configMenu.push({
@@ -62,7 +62,7 @@ export const buildMenu = (op?: BuildMenu) => {
     type: 'normal',
     async click() {
       clearConfigCache();
-      await restartClash();
+      await reload();
     }
   });
   configMenu.push({

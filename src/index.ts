@@ -49,7 +49,7 @@ app.on('ready', async () => {
 app.on('window-all-closed', () => {});
 
 app.on('will-quit', async () => {
-  clearProxy();
+  await clearProxy();
   killClash();
 });
 

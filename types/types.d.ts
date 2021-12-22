@@ -17,3 +17,30 @@ interface Config {
     updateTime: number;
   }>;
 }
+
+interface ProxyConfig {
+  http?: HostPort;
+  https?: HostPort;
+  socks?: HostPort;
+}
+
+interface ProxyState {
+  http: {
+    enable: boolean;
+    server?: HostPort;
+  };
+  https: {
+    enable: boolean;
+    server?: HostPort;
+  };
+  socks: {
+    enable: boolean;
+    server?: HostPort;
+  };
+}
+
+declare abstract class SystemProxy {
+  static setProxy(conf: ProxyConfig): Promise<void>;
+  static clearProxy(): Promise<void>;
+  static getProxyState(): Promise<ProxyState>;
+}

@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import { getApiInfo } from './config';
 import { clearProxy, getProxyState } from '../lib/proxy';
-import { autoSetProxy } from './utils';
+import { autoSetProxy, systemProxyIsEnable } from './utils';
 
 export const initMessage = () => {
   ipcMain.on('get-api-info', async event => {
@@ -9,12 +9,12 @@ export const initMessage = () => {
     event.reply('api-info', apiInfo);
   });
 
-  ipcMain.on('get-proxy-state', event => {
-    event.reply('proxy-state', getProxyState().http.enable);
+  ipcMain.on('get-proxy-state', async event => {
+    event.reply('proxy-state', await systemProxyIsEnable());
   });
 
   ipcMain.on('set-system-proxy', async (event, enable: boolean) => {
-    enable ? await autoSetProxy() : clearProxy();
+    enable ? await autoSetProxy() : await clearProxy();
     event.reply('set-system-proxy-success');
   });
 };
