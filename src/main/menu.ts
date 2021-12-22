@@ -169,12 +169,16 @@ export const updateTray = async () => {
 
 export const setTray = () => {
   tray = new Tray(path.join(DIR.assets(), 'tray.png'));
+  const _updateTray = debounce(updateTray, 1000, { leading: true, trailing: false });
 
   tray.setToolTip('Clash Pro');
   tray.on('click', async () => {
-    console.log('click me');
+    console.log('click tray');
     if (platform === 'win32') return showWindow();
-    // await updateTray();
+    if (platform === 'linux') {
+      _updateTray();
+      return showWindow();
+    }
   });
 
   // win11 not support
@@ -184,13 +188,12 @@ export const setTray = () => {
 
   if (platform === 'win32') {
     // win useage
-    tray.on('mouse-move', debounce(updateTray, 1000, { leading: true, trailing: false }));
+    tray.on('mouse-move', _updateTray);
   } else {
     // mac useage
-    tray.on('mouse-enter', updateTray);
+    tray.on('mouse-enter', _updateTray);
   }
-  tray.setContextMenu(buildMenu());
-  // updateTray();
+  _updateTray();
 };
 
 export const setAppMenu = () => {
