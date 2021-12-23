@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, MenuItemConstructorOptions, Tray, shell } from 'electron';
+import { app, BrowserWindow, Menu, MenuItemConstructorOptions, Tray, shell, clipboard } from 'electron';
 import debounce from 'lodash.debounce';
 import path from 'path';
 
@@ -20,10 +20,9 @@ interface BuildMenu {
   groups?: API.Group[];
   config?: Config;
 }
-export const buildMenu = (op?: BuildMenu) => {
-  const { sysProxy = false, mode = 'unknow', groups = [], config } = op || {};
 
-  const policy: MenuItemConstructorOptions[] = groups.map(it => ({
+const getPolicyMenu = (groups: API.Group[]): MenuItemConstructorOptions[] => {
+  return groups.map(it => ({
     label: it.name,
     type: 'submenu',
     submenu: it.all.map(t => ({
@@ -36,7 +35,9 @@ export const buildMenu = (op?: BuildMenu) => {
       }
     }))
   }));
+};
 
+const getConfigMenu = (config?: Config): MenuItemConstructorOptions[] => {
   const configMenu: MenuItemConstructorOptions[] =
     config?.list.map(it => ({
       label: it.name,
@@ -72,6 +73,56 @@ export const buildMenu = (op?: BuildMenu) => {
       shell.showItemInFolder(FILE.config());
     }
   });
+  return configMenu;
+};
+
+const getCopyCommandLineProxyMenu = (): MenuItemConstructorOptions[] => {
+  const handleCopy = async (prefix: string, quot: string, join: string) => {
+    const config = await fetchClashConfig();
+    const http = config['mixed-port'] || config.port;
+    const socks = config['mixed-port'] || config['socks-port'];
+    let commands: string[] = [];
+    if (http) {
+      commands.push(`${prefix}http_proxy=${quot}http://127.0.0.1:${http}${quot}`);
+      commands.push(`${prefix}https_proxy=${quot}http://127.0.0.1:${http}${quot}`);
+    } else if (socks) {
+      commands.push(`${prefix}socks_proxy=${quot}socks://127.0.0.1:${socks}${quot}`);
+    }
+    clipboard.writeText(commands.join(join));
+  };
+
+  if (platform === 'win32') {
+    return [
+      {
+        label: '复制powershell命令行代理',
+        type: 'normal',
+        async click() {
+          await handleCopy('$env:', '"', ';');
+        }
+      },
+      {
+        label: '复制cmd命令行代理',
+        type: 'normal',
+        click() {
+          handleCopy('set ', '', ' && ');
+        }
+      }
+    ];
+  } else {
+    return [
+      {
+        label: '复制命令行代理',
+        type: 'normal',
+        click() {
+          handleCopy('export ', '"', ';');
+        }
+      }
+    ];
+  }
+};
+
+export const buildMenu = (op?: BuildMenu) => {
+  const { sysProxy = false, mode = 'unknow', groups = [], config } = op || {};
   return Menu.buildFromTemplate([
     {
       label: `出站规则(${mode})`,
@@ -114,13 +165,16 @@ export const buildMenu = (op?: BuildMenu) => {
     {
       label: '策略组',
       type: 'submenu',
-      submenu: policy
+      submenu: getPolicyMenu(groups)
     },
     {
       label: '配置',
       type: 'submenu',
-      submenu: configMenu
+      submenu: getConfigMenu(config)
     },
+    { type: 'separator' },
+    ...getCopyCommandLineProxyMenu(),
+    { type: 'separator' },
     {
       label: '设置为系统代理',
       type: 'checkbox',
