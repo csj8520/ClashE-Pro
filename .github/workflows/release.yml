@@ -47,7 +47,7 @@ jobs:
 
       - name: Install snapcraft
         if: matrix.os == 'ubuntu-latest'
-        run: sudo snap install snapcraft --classic
+        run: sudo apt install snapd snap snapcraft && sudo snap install multipass && sudo snap install review-tools
 
       - name: Build
         run: npm run release
