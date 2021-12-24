@@ -25,9 +25,9 @@ export const createWindow = async () => {
 
 export const getMainWindow = () => (mainWindow?.isDestroyed() ? null : mainWindow);
 
-export const showWindow = () => {
+export const showWindow = async () => {
   if (!mainWindow || mainWindow.isDestroyed()) {
-    createWindow();
+    await createWindow();
   } else {
     mainWindow.show();
   }

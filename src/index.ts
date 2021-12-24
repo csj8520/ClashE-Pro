@@ -1,11 +1,11 @@
-import { app, BrowserWindow } from 'electron';
+import { app } from 'electron';
 
 import { platform } from './lib/os';
 import { clashRun, killClash } from './main/clash';
 import { clearProxy } from './lib/proxy';
-import { autoSetProxy } from './main/utils';
+import { autoSetProxy, delay } from './main/utils';
 import { autoUpdateAllRemoteConfig, copyDefaultConfig, initConfig } from './main/config';
-import { createWindow, showWindow } from './main/window';
+import { showWindow } from './main/window';
 import { setTray, setAppMenu } from './main/menu';
 import { fixJsMime } from './main/fix-js-mime';
 import { initMessage } from './main/message';
@@ -37,11 +37,11 @@ app.on('ready', async () => {
   config.autoSetProxy && (await autoSetProxy());
 
   setAppMenu();
-  await createWindow();
+  await showWindow();
   setTray();
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    showWindow();
   });
 });
 
