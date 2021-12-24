@@ -1,9 +1,10 @@
 import { app } from 'electron';
+import { autoUpdater } from 'electron-updater';
 
 import { platform } from './lib/os';
 import { clashRun, killClash } from './main/clash';
 import { clearProxy } from './lib/proxy';
-import { autoSetProxy, delay } from './main/utils';
+import { autoSetProxy } from './main/utils';
 import { autoUpdateAllRemoteConfig, copyDefaultConfig, initConfig } from './main/config';
 import { showWindow } from './main/window';
 import { setTray, setAppMenu } from './main/menu';
@@ -20,6 +21,7 @@ if (!gotTheLock) {
 }
 
 app.on('ready', async () => {
+  console.log(`Current Version is ${app.getVersion()}`);
   process.env.TEMP = app.getPath('temp');
   process.env.HOME = app.getPath('home');
 
@@ -39,6 +41,8 @@ app.on('ready', async () => {
   setAppMenu();
   await showWindow();
   setTray();
+
+  autoUpdater.checkForUpdatesAndNotify();
 
   app.on('activate', function () {
     showWindow();

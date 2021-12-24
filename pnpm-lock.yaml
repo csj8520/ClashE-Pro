@@ -8,6 +8,7 @@ specifiers:
   '@types/lodash.debounce': ^4.0.6
   electron: ^16.0.5
   electron-builder: ^22.14.5
+  electron-updater: ^4.6.1
   esno: ^0.13.0
   fs-extra: ^10.0.0
   got: ^11.8.3
@@ -19,6 +20,7 @@ specifiers:
 
 dependencies:
   7zip-min: 1.4.1
+  electron-updater: 4.6.1
   fs-extra: 10.0.0
   got: 11.8.3
   js-yaml: 4.1.0
@@ -220,6 +222,10 @@ packages:
     resolution: {integrity: sha1-JR9P59FU0rrRJavhtCmyOv0mLik=, tarball: '@types/responselike/download/@types/responselike-1.0.0.tgz'}
     dependencies:
       '@types/node': 17.0.2
+    dev: false
+
+  /@types/semver/7.3.9:
+    resolution: {integrity: sha1-FSxsIKdojDC5Z+wYQdMazlaYY/w=, tarball: '@types/semver/download/@types/semver-7.3.9.tgz?cache=0&sync_timestamp=1637331922592&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2F%40types%2Fsemver%2Fdownload%2F%40types%2Fsemver-7.3.9.tgz'}
     dev: false
 
   /@types/verror/1.10.5:
@@ -466,7 +472,6 @@ packages:
       sax: 1.2.4
     transitivePeerDependencies:
       - supports-color
-    dev: true
 
   /builder-util/22.14.5:
     resolution: {integrity: sha1-QqGGCNKlZsCEbpEmZGR3bIv7DMk=, tarball: builder-util/download/builder-util-22.14.5.tgz}
@@ -911,6 +916,21 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /electron-updater/4.6.1:
+    resolution: {integrity: sha1-gMqAXE9RsuaCqsKdGP7XXWpTPTI=, tarball: electron-updater/download/electron-updater-4.6.1.tgz}
+    dependencies:
+      '@types/semver': 7.3.9
+      builder-util-runtime: 8.9.1
+      fs-extra: 10.0.0
+      js-yaml: 4.1.0
+      lazy-val: 1.0.5
+      lodash.escaperegexp: 4.1.2
+      lodash.isequal: 4.5.0
+      semver: 7.3.5
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /electron/16.0.5:
     resolution: {integrity: sha512-TgQXWmEGQ3uH2P2JDq5GyJDEu/fimRgqp1iNisARtGreU1k3630PqWlR+4SPnSEHN9NuSv92ng6NWxtefeFzxg==, tarball: electron/download/electron-16.0.5.tgz}
@@ -1414,7 +1434,7 @@ packages:
       universalify: 2.0.0
 
   /fs-extra/8.1.0:
-    resolution: {integrity: sha1-SdQ8RaiM2Wd2aMt74bRu/bjS4cA=, tarball: fs-extra/download/fs-extra-8.1.0.tgz?cache=0&sync_timestamp=1632822706452&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Ffs-extra%2Fdownload%2Ffs-extra-8.1.0.tgz}
+    resolution: {integrity: sha1-SdQ8RaiM2Wd2aMt74bRu/bjS4cA=, tarball: fs-extra/download/fs-extra-8.1.0.tgz}
     engines: {node: '>=6 <7 || >=8'}
     dependencies:
       graceful-fs: 4.2.8
@@ -1422,7 +1442,7 @@ packages:
       universalify: 0.1.2
 
   /fs-extra/9.1.0:
-    resolution: {integrity: sha1-WVRGDHZKjaIJS6NVS/g55rmnyG0=, tarball: fs-extra/download/fs-extra-9.1.0.tgz?cache=0&sync_timestamp=1632822706452&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Ffs-extra%2Fdownload%2Ffs-extra-9.1.0.tgz}
+    resolution: {integrity: sha1-WVRGDHZKjaIJS6NVS/g55rmnyG0=, tarball: fs-extra/download/fs-extra-9.1.0.tgz}
     engines: {node: '>=10'}
     dependencies:
       at-least-node: 1.0.0
@@ -1853,7 +1873,6 @@ packages:
 
   /lazy-val/1.0.5:
     resolution: {integrity: sha1-bPO59bwxzufuPjacCDK3WD3Nkj0=, tarball: lazy-val/download/lazy-val-1.0.5.tgz}
-    dev: true
 
   /levn/0.3.0:
     resolution: {integrity: sha1-OwmSTt+fCDwEkP3UwLxEIeBHZO4=, tarball: levn/download/levn-0.3.0.tgz}
@@ -1865,6 +1884,14 @@ packages:
 
   /lodash.debounce/4.0.8:
     resolution: {integrity: sha1-gteb/zCmfEAF/9XiUVMArZyk168=, tarball: lodash.debounce/download/lodash.debounce-4.0.8.tgz}
+    dev: false
+
+  /lodash.escaperegexp/4.1.2:
+    resolution: {integrity: sha1-ZHYsSGGAglGKw99Mz11YhtriA0c=, tarball: lodash.escaperegexp/download/lodash.escaperegexp-4.1.2.tgz}
+    dev: false
+
+  /lodash.isequal/4.5.0:
+    resolution: {integrity: sha1-QVxEePK8wwEgwizhDtMib30+GOA=, tarball: lodash.isequal/download/lodash.isequal-4.5.0.tgz}
     dev: false
 
   /lodash/4.17.21:
@@ -1891,7 +1918,6 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       yallist: 4.0.0
-    dev: true
 
   /make-dir/3.1.0:
     resolution: {integrity: sha1-QV6WcEazp/HRhSd9hKpYIDcmoT8=, tarball: make-dir/download/make-dir-3.1.0.tgz}
@@ -2274,7 +2300,6 @@ packages:
 
   /sax/1.2.4:
     resolution: {integrity: sha1-KBYjTiN4vdxOU1T6tcqold9xANk=, tarball: sax/download/sax-1.2.4.tgz}
-    dev: true
 
   /semver-compare/1.0.0:
     resolution: {integrity: sha1-De4hahyUGrN+nvsXiPavxf9VN/w=, tarball: semver-compare/download/semver-compare-1.0.0.tgz}
@@ -2289,17 +2314,16 @@ packages:
     dev: true
 
   /semver/6.3.0:
-    resolution: {integrity: sha1-7gpkyK9ejO6mdoexM3YeG+y9HT0=, tarball: semver/download/semver-6.3.0.tgz}
+    resolution: {integrity: sha1-7gpkyK9ejO6mdoexM3YeG+y9HT0=, tarball: semver/download/semver-6.3.0.tgz?cache=0&sync_timestamp=1634019726791&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fsemver%2Fdownload%2Fsemver-6.3.0.tgz}
     hasBin: true
     dev: true
 
   /semver/7.3.5:
-    resolution: {integrity: sha1-C2Ich5NI2JmOSw5L6Us/EuYBjvc=, tarball: semver/download/semver-7.3.5.tgz}
+    resolution: {integrity: sha1-C2Ich5NI2JmOSw5L6Us/EuYBjvc=, tarball: semver/download/semver-7.3.5.tgz?cache=0&sync_timestamp=1634019726791&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fsemver%2Fdownload%2Fsemver-7.3.5.tgz}
     engines: {node: '>=10'}
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
-    dev: true
 
   /serialize-error/7.0.1:
     resolution: {integrity: sha1-8TYLBEf2H/tIPsQVfHN/q313jhg=, tarball: serialize-error/download/serialize-error-7.0.1.tgz}
@@ -2671,7 +2695,6 @@ packages:
 
   /yallist/4.0.0:
     resolution: {integrity: sha1-m7knkNnA7/7GO+c1GeEaNQGaOnI=, tarball: yallist/download/yallist-4.0.0.tgz}
-    dev: true
 
   /yargs-parser/21.0.0:
     resolution: {integrity: sha512-z9kApYUOCwoeZ78rfRYYWdiU/iNL6mwwYlkkZfJoyMR1xps+NEBX5X7XmRpxkZHhXJ6+Ey00IwKxBBSW9FIjyA==, tarball: yargs-parser/download/yargs-parser-21.0.0.tgz}
