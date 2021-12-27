@@ -1,6 +1,6 @@
 {
-  "name": "electron-clash-pro",
-  "version": "0.0.2",
+  "name": "clashe-pro",
+  "version": "0.0.1",
   "description": "",
   "main": "./dist/index.js",
   "author": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:csj8520/electron-clash-pro.git"
+    "url": "git@github.com:csj8520/ClashE-Pro.git"
   },
   "scripts": {
     "init": "git submodule init && git submodule update && pnpm i && cd clash-dashboard && pnpm i && npm run build",

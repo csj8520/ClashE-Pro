@@ -19,11 +19,12 @@ build({
       process.env.clashBin = bin;
       (await fs.pathExists(path.join(__dirname, '../clash', bin))) || (await downloadLatestClash({ platform, arch }));
     },
+    productName: 'ClashE Pro',
     appId: 'com.csj8520.clash.pro',
     removePackageScripts: true,
     compression: 'normal',
     asar: false,
-    artifactName: 'ElectronClashPro-${platform}-${arch}-${version}.${ext}',
+    artifactName: 'ClashE Pro-${platform}-${arch}-${version}.${ext}',
     files: ['dist/**/*', 'assets/**/*', 'clash-dashboard/dist/**/*', 'clash/${env.clashBin}'],
     directories: {
       output: 'builder'

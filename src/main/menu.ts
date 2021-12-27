@@ -196,6 +196,13 @@ export const buildMenu = (op?: BuildMenu) => {
       }
     },
     {
+      label: '关于',
+      type: 'normal',
+      click() {
+        shell.openExternal('https://github.com/csj8520/ClashE-Pro');
+      }
+    },
+    {
       label: '退出',
       role: 'quit'
     }

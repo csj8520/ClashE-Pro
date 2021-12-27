@@ -42,7 +42,9 @@ app.on('ready', async () => {
   await showWindow();
   setTray();
 
-  autoUpdater.checkForUpdatesAndNotify();
+  setTimeout(() => {
+    autoUpdater.checkForUpdatesAndNotify({ title: '版本更新', body: '新版本ElectronClashPro（{version}）已下载，退出时将会自动安装。' });
+  }, 1000 * 10);
 
   app.on('activate', function () {
     showWindow();
